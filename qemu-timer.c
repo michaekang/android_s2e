@@ -63,7 +63,7 @@ int icount_time_shift;
 int64_t qemu_icount_bias;
 static QEMUTimer *icount_rt_timer;
 static QEMUTimer *icount_vm_timer;
-
+#if 0
 /***********************************************************/
 /* guest cycle counter */
 
@@ -74,7 +74,7 @@ typedef struct TimersState {
     int32_t cpu_ticks_enabled;
     int64_t dummy;
 } TimersState;
-
+#endif
 static void timer_save(QEMUFile *f, void *opaque)
 {
     TimersState *s = opaque;

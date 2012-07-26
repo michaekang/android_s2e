@@ -14,6 +14,16 @@
 #define SCALE_MS 1000000
 #define SCALE_US 1000
 #define SCALE_NS 1
+/***********************************************************/
+/* guest cycle counter */
+
+typedef struct TimersState {
+    int64_t cpu_ticks_prev;
+    int64_t cpu_ticks_offset;
+    int64_t cpu_clock_offset;
+    int32_t cpu_ticks_enabled;
+    int64_t dummy;
+} TimersState;
 
 typedef struct QEMUClock QEMUClock;
 typedef void QEMUTimerCB(void *opaque);
