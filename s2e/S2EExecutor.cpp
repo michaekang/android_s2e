@@ -209,6 +209,7 @@ extern "C" {
     int g_s2e_concretize_io_writes = 1;
 }
 
+extern TimersState timers_state;
 static bool S2EDebugInstructions = false;
 
 namespace s2e {
