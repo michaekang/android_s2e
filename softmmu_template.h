@@ -102,7 +102,37 @@ static DATA_TYPE glue(glue(slow_ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                         int mmu_idx,
                                                         void *retaddr);
 #ifndef S2E_LLVM_LIB
+
 static inline DATA_TYPE glue(io_read, SUFFIX)(target_phys_addr_t physaddr,
+                                              target_ulong addr,
+                                              void *retaddr)
+{
+    DATA_TYPE res;
+    int index;
+    index = (physaddr >> IO_MEM_SHIFT) & (IO_MEM_NB_ENTRIES - 1);
+    physaddr = (physaddr & TARGET_PAGE_MASK) + addr;
+    env->mem_io_pc = (unsigned long)retaddr;
+    if (index > (IO_MEM_NOTDIRTY >> IO_MEM_SHIFT)
+            && !can_do_io(env)) {
+        cpu_io_recompile(env, retaddr);
+    }
+
+    env->mem_io_vaddr = addr;
+#if SHIFT <= 2
+    res = io_mem_read[index][SHIFT](io_mem_opaque[index], physaddr);
+#else
+#ifdef TARGET_WORDS_BIGENDIAN
+    res = (uint64_t)io_mem_read[index][2](io_mem_opaque[index], physaddr) << 32;
+    res |= io_mem_read[index][2](io_mem_opaque[index], physaddr + 4);
+#else
+    res = io_mem_read[index][2](io_mem_opaque[index], physaddr);
+    res |= (uint64_t)io_mem_read[index][2](io_mem_opaque[index], physaddr + 4) << 32;
+#endif
+#endif /* SHIFT > 2 */
+    return res;
+}
+
+inline DATA_TYPE glue(glue(io_read, SUFFIX), MMUSUFFIX)(target_phys_addr_t physaddr,
                                               target_ulong addr,
                                               void *retaddr)
 {
