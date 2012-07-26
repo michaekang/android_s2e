@@ -232,12 +232,12 @@ static inline TCGCond tcg_swap_cond(TCGCond c)
     int mask = (c < TCG_COND_LT ? 0 : c < TCG_COND_LTU ? 7 : 15);
     return (TCGCond)(c ^ mask);
 }
-
+#if 0
 static inline TCGCond tcg_unsigned_cond(TCGCond c)
 {
     return (c >= TCG_COND_LT && c <= TCG_COND_GT ? c + 4 : c);
 }
-
+#endif
 #define TEMP_VAL_DEAD  0
 #define TEMP_VAL_REG   1
 #define TEMP_VAL_MEM   2
