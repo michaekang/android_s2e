@@ -101,8 +101,8 @@
 static DATA_TYPE glue(glue(slow_ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                         int mmu_idx,
                                                         void *retaddr);
-#ifndef S2E_LLVM_LIB
-
+#ifndef CONFIG_S2E
+#if 0
 static inline DATA_TYPE glue(io_read, SUFFIX)(target_phys_addr_t physaddr,
                                               target_ulong addr,
                                               void *retaddr)
@@ -131,7 +131,7 @@ static inline DATA_TYPE glue(io_read, SUFFIX)(target_phys_addr_t physaddr,
 #endif /* SHIFT > 2 */
     return res;
 }
-
+#endif
 inline DATA_TYPE glue(glue(io_read, SUFFIX), MMUSUFFIX)(target_phys_addr_t physaddr,
                                               target_ulong addr,
                                               void *retaddr)
@@ -567,7 +567,7 @@ static void glue(glue(slow_st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                    int mmu_idx,
                                                    void *retaddr);
 
-#ifndef S2E_LLVM_LIB
+#ifndef CONFIG_S2E
 static inline void glue(io_write, SUFFIX)(target_phys_addr_t physaddr,
                                           DATA_TYPE val,
                                           target_ulong addr,
