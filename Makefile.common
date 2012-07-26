@@ -30,6 +30,9 @@ EMULATOR_COMMON_CFLAGS += \
 ifeq ($(BUILD_STANDALONE_EMULATOR),)
 EMULATOR_COMMON_CFLAGS += -DANDROID_BUILD_ID="$(strip $(BUILD_ID))-$(strip $(BUILD_NUMBER))"
 endif
+ifeq ($(BUILD_S2E),)
+EMULATOR_COMMON_CFLAGS += -DCONFIG_S2E
+endif
 
 # For non-standalone builds, extract the major version number from the Android SDK
 # tools revision number.
@@ -186,7 +189,7 @@ else # BUILD_SDL_FROM_SOURCES
 endif # BUILD_SDL_FROM_SOURCES
 
 EMULATOR_LIBUI_CFLAGS += $(SDL_CFLAGS)
-EMULATOR_LIBUI_LDLIBS += $(SDL_LDLIBS)
+EMULATOR_LIBUI_LDLIBS += $(SDL_LDLIBS) -liconv
 
 # The following is needed by SDL_LoadObject
 ifneq ($(HOST_OS),windows)
@@ -382,6 +385,8 @@ CORE_MISC_SOURCES = \
     android/qemu-setup.c \
     android/snapshot.c \
     android/utils/timezone.c \
+
+
 
 ifeq ($(HOST_ARCH),x86)
     CORE_MISC_SOURCES += i386-dis.c

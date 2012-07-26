@@ -45,6 +45,9 @@ for opt do
   ;;
   --debug) OPTION_DEBUG=yes
   ;;
+  --enable-s2e) OPTION_S2E=yes
+  ;;
+
   --install=*) OPTION_TARGETS="$OPTION_TARGETS $optarg";
   ;;
   --sdl-config=*) SDL_CONFIG=$optarg
@@ -72,6 +75,7 @@ for opt do
     exit 1
   esac
 done
+
 
 # Print the help message
 #
@@ -527,6 +531,11 @@ if [ "$OPTION_STATIC" = "yes" ] ; then
     echo "CONFIG_STATIC_EXECUTABLE := true" >> $config_mk
     echo "#define CONFIG_STATIC_EXECUTABLE  1" >> $config_h
 fi
+
+if [ "$OPTION_S2E" = "yes" ] ; then
+    echo "BUILD_S2E := true" >> $config_mk
+fi
+
 
 case $TARGET_OS in
     linux-*|darwin-*)

@@ -28,6 +28,11 @@ EMULATOR_TARGET_CFLAGS := \
     -I$(LOCAL_PATH)/fpu \
     -DNEED_CPU_H \
 
+
+ifeq ($(BUILD_S2E),)
+EMULATOR_TARGET_CFLAGS += -DCONFIG_S2E -DCONFIG_LLVM
+endif
+
 TCG_TARGET := $(HOST_ARCH)
 ifeq ($(HOST_ARCH),x86)
   TCG_TARGET := i386
@@ -163,6 +168,27 @@ LOCAL_SRC_FILES += \
     hw/armv7m.c \
     hw/armv7m_nvic.c \
     arm-semi.c \
+
+ifeq ($(BUILD_S2E),)
+KLEE_DIR := /home/ksh/git/s2e/klee/
+BUILD_S2E_DIR := /home/ksh/git/build_s2e/
+BUILD_KLEE_DIR := /home/ksh/git/build_s2e/klee/
+S2E_DIR := s2e/
+LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
+		$(S2E_DIR)/ConfigFile.cpp \
+		$(S2E_DIR)/Database.cpp \
+		$(S2E_DIR)/S2E.cpp \
+		$(S2E_DIR)/S2EDeviceState.cpp \
+		$(S2E_DIR)/S2EExecutionState.cpp \
+		$(S2E_DIR)/S2EStatsTracker.cpp \
+		$(S2E_DIR)/SelectRemovalPass.cpp \
+		$(S2E_DIR)/Slab.cpp \
+		$(S2E_DIR)/Synchronization.cpp \
+		$(S2E_DIR)/Plugin.cpp \
+		$(S2E_DIR)/S2EExecutor.cpp 
+
+LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `~/git/build_s2e/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
+endif
 
 LOCAL_SRC_FILES += fpu/softfloat.c
 endif
