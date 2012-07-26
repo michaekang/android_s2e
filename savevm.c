@@ -819,6 +819,8 @@ typedef struct SaveStateEntry {
     void *opaque;
     struct SaveStateEntry *next;
 } SaveStateEntry;
+static QTAILQ_HEAD(savevm_handlers, SaveStateEntry) savevm_handlers =
+    QTAILQ_HEAD_INITIALIZER(savevm_handlers);
 
 static SaveStateEntry *first_se;
 
@@ -1061,7 +1063,9 @@ void *s2e_qemu_get_first_se(void)
 void *s2e_qemu_get_next_se(void *se) 
 {
     SaveStateEntry *sse = (SaveStateEntry*)se;
-    return sse->entry.tqe_next;
+    //return sse->entry.tqe_next;
+	return NULL;
+
 }
 
 const char *s2e_qemu_get_se_idstr(void *se)
