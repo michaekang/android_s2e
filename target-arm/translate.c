@@ -8952,6 +8952,7 @@ static void disas_thumb_insn(CPUState *env, DisasContext *s)
 
     insn = lduw_code(s->pc);
 #ifdef CONFIG_S2E
+    TCGv_i64 tmp64;
     tmp = new_tmp();
     tcg_gen_movi_tl(tmp, s->pc);
     //tcg_gen_st_tl(tmp, cpu_env, offsetof(CPUState, regs[15]));

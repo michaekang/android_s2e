@@ -28,6 +28,7 @@
 #include "config.h"
 #include "qemu-common.h"
 #include "cpu-defs.h"
+#include "cpu-all.h"
 
 #include "softfloat.h"
 #ifdef CONFIG_S2E
@@ -61,6 +62,14 @@
 
 /* ARM-specific interrupt pending bits.  */
 #define CPU_INTERRUPT_FIQ   CPU_INTERRUPT_TGT_EXT_1
+#if defined(CONFIG_USER_ONLY)
+#define TARGET_PAGE_BITS 12
+#else
+/* The ARM MMU allows 1k pages.  */
+/* ??? Linux doesn't actually use these, and they're deprecated in recent
+   architecture revisions.  Maybe a configure option to disable them.  */
+#define TARGET_PAGE_BITS 10
+#endif
 
 
 typedef void ARMWriteCPFunc(void *opaque, int cp_info,
@@ -474,14 +483,6 @@ void cpu_arm_set_cp_io(CPUARMState *env, int cpnum,
 #define ARM_CPUID_CORTEXM3    0x410fc231
 #define ARM_CPUID_ANY         0xffffffff
 
-#if defined(CONFIG_USER_ONLY)
-#define TARGET_PAGE_BITS 12
-#else
-/* The ARM MMU allows 1k pages.  */
-/* ??? Linux doesn't actually use these, and they're deprecated in recent
-   architecture revisions.  Maybe a configure option to disable them.  */
-#define TARGET_PAGE_BITS 10
-#endif
 
 #define TARGET_PHYS_ADDR_SPACE_BITS 32
 #define TARGET_VIRT_ADDR_SPACE_BITS 32

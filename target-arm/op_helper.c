@@ -168,6 +168,7 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def,
 #include <s2e/s2e_qemu.h>
 #endif
 
+#ifndef CONFIG_S2E
 /* try to fill the TLB and return an exception if error. If retaddr is
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
@@ -222,6 +223,67 @@ s2e_on_page_fault(g_s2e, g_s2e_state, addr, is_write);
     }
     env = saved_env;
 }
+#else
+/* try to fill the TLB and return an exception if error. If retaddr is
+   NULL, it means that the function was called in C code (i.e. not
+   from generated code or from helper.c) */
+/* XXX: fix it to restore all registers */
+void tlb_fill(target_ulong addr, target_ulong page_addr, int is_write, int mmu_idx,
+              void *retaddr)
+{
+    TranslationBlock *tb;
+    CPUState *saved_env;
+    unsigned long pc;
+    int ret;
+
+    /* XXX: hack to restore env in all cases, even if not called from
+       generated code */
+	saved_env = env;
+    if(env != cpu_single_env)
+    	env = cpu_single_env;
+#ifdef CONFIG_S2E
+    s2e_on_tlb_miss(g_s2e, g_s2e_state, addr, is_write);
+    ret = cpu_arm_handle_mmu_fault(env, page_addr,
+                                   is_write, mmu_idx, 1);
+#else
+    ret = cpu_arm_handle_mmu_fault(env, addr, is_write, mmu_idx, 1);
+#endif
+
+    if (unlikely(ret)) {
+
+#ifdef CONFIG_S2E
+        /* In S2E we pass page address instead of addr to cpu_arm_handle_mmu_fault,
+           since the latter can be symbolic while the former is always concrete.
+           To compensate, we reset fault address here. */
+        if(env->exception_index == EXCP_PREFETCH_ABORT || env->exception_index == EXCP_DATA_ABORT) {
+            assert(1 && "handle coprocessor exception properly");
+        }
+        if(use_icount)
+            cpu_restore_icount(env);
+#endif
+
+        if (retaddr) {
+            /* now we have a real cpu fault */
+            pc = (unsigned long)retaddr;
+            tb = tb_find_pc(pc);
+            if (tb) {
+                /* the PC is inside the translated code. It means that we have
+                   a virtual CPU fault */
+                cpu_restore_state(tb, env, pc);
+            }
+        }
+
+#ifdef CONFIG_S2E
+s2e_on_page_fault(g_s2e, g_s2e_state, addr, is_write);
+#endif
+
+        raise_exception(env->exception_index);
+    }
+
+    if(saved_env != env)
+    	env = saved_env;
+}
+#endif
 
 void HELPER(set_cp)(CPUState *env, uint32_t insn, uint32_t val)
 {

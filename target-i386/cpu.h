@@ -563,6 +563,7 @@ typedef union {
 
 #define NB_MMU_MODES 2
 
+#define TARGET_PAGE_BITS 12
 typedef struct CPUX86State {
     /* standard registers */
     target_ulong regs[CPU_NB_REGS];
@@ -855,7 +856,6 @@ static inline int cpu_get_time_fast(void)
 }
 #endif
 
-#define TARGET_PAGE_BITS 12
 
 #define cpu_init cpu_x86_init
 #define cpu_exec cpu_x86_exec
