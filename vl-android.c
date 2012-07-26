@@ -4254,9 +4254,10 @@ int main(int argc, char **argv, char **envp)
     }
 #ifdef CONFIG_S2E
     s2e_on_device_registration(g_s2e);
-#elif defined(TARGET_I386)
+#if defined(TARGET_I386)
     void fake_register_devices(fake_pci_t *fake);
     fake_register_devices(&g_fake_pci);
+#endif
 #endif
 
     module_call_init(MODULE_INIT_DEVICE);
