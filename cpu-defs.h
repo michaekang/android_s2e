@@ -25,11 +25,15 @@
 
 #include "config.h"
 #include <setjmp.h>
+#include <s2e/S2ESJLJ.h>
 #include <inttypes.h>
 #include <signal.h>
 #include "osdep.h"
 #include "qemu-queue.h"
 #include "targphys.h"
+#ifdef CONFIG_S2E
+#include <s2e/s2e_config.h>
+#endif
 
 #ifndef TARGET_LONG_BITS
 #error TARGET_LONG_BITS must be defined before including this header
@@ -102,6 +106,23 @@ typedef struct CPUTLBEntry {
                    sizeof(size_t))];
 } CPUTLBEntry;
 
+#if defined(CONFIG_S2E) && defined(S2E_ENABLE_S2E_TLB)
+
+typedef struct S2ETLBEntry {
+    void* objectState;
+    uintptr_t addend;
+} S2ETLBEntry;
+
+#define CPU_S2E_TLB_BITS (CPU_TLB_BITS + TARGET_PAGE_BITS - S2E_RAM_OBJECT_BITS)
+#define CPU_S2E_TLB_SIZE (1 << CPU_S2E_TLB_BITS)
+
+#define _CPU_COMMON_S2E_TLB_TABLE \
+    S2ETLBEntry s2e_tlb_table[NB_MMU_MODES][CPU_S2E_TLB_SIZE];
+
+#else
+#define _CPU_COMMON_S2E_TLB_TABLE
+#endif
+
 extern int CPUTLBEntry_wrong_size[sizeof(CPUTLBEntry) == (1 << CPU_TLB_ENTRY_BITS) ? 1 : -1];
 
 #define CPU_COMMON_TLB \
@@ -151,6 +172,7 @@ typedef struct CPUWatchpoint {
 #define CPU_COMMON                                                      \
     struct TranslationBlock *current_tb; /* currently executing TB  */  \
     /* soft mmu support */                                              \
+    struct TranslationBlock *s2e_current_tb; /* currently executing TB  */  \
     /* in order to avoid passing too many arguments to the MMIO         \
        helpers, we store some rarely used information in the CPU        \
        context) */                                                      \
@@ -162,6 +184,7 @@ typedef struct CPUWatchpoint {
     uint32_t interrupt_request;                                         \
     volatile sig_atomic_t exit_request;                                 \
     CPU_COMMON_TLB                                                      \
+    _CPU_COMMON_S2E_TLB_TABLE                                           \
     struct TranslationBlock *tb_jmp_cache[TB_JMP_CACHE_SIZE];           \
     /* buffer for temporaries in the code generator */                  \
     long temp_buf[CPU_TEMP_BUF_NLONGS];                                 \

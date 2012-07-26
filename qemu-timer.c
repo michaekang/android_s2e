@@ -1359,9 +1359,20 @@ int qemu_calculate_timeout(void)
                 add = 10000000;
             delta += add;
             qemu_icount += qemu_icount_round (add);
+#ifdef CONFIG_S2E
+            CPUState *env;
+            for (env = first_cpu; env != NULL; env = env->next_cpu) {
+                env->s2e_icount += add;
+                env->s2e_icount_after_tb += add;
+            }
+
+            /* For S2E we do not emulate the real timeout */
+            timeout = 0;
+#else
             timeout = delta / 1000000;
             if (timeout < 0)
                 timeout = 0;
+#endif
         }
     }
 

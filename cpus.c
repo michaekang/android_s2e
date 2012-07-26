@@ -565,6 +565,10 @@ static int qemu_cpu_exec(CPUState *env)
     ti = profile_getclock();
 #endif
     if (use_icount) {
+#ifdef CONFIG_S2E
+        assert(qemu_icount == env->s2e_icount);
+#endif
+
         int64_t count;
         int decr;
         qemu_icount -= (env->icount_decr.u16.low + env->icount_extra);
@@ -599,6 +603,10 @@ static int qemu_cpu_exec(CPUState *env)
                         + env->icount_extra);
         env->icount_decr.u32 = 0;
         env->icount_extra = 0;
+#ifdef CONFIG_S2E
+        assert(qemu_icount == env->s2e_icount);
+#endif
+
     }
     return ret;
 }

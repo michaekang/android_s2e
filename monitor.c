@@ -45,6 +45,9 @@
 #include "kvm.h"
 #include "acl.h"
 #include "exec-all.h"
+#ifdef CONFIG_S2E
+#include <s2e/s2e_qemu.h>
+#endif
 
 //#define DEBUG
 //#define DEBUG_COMPLETION
@@ -530,6 +533,45 @@ static void do_log(Monitor *mon, const char *items)
     }
     cpu_set_log(mask);
 }
+#ifdef CONFIG_S2E
+static void do_s2e(Monitor *mon, const QDict *params, QObject **ret_data)
+{
+    const char *command = qdict_get_try_str(params, "command");
+    if (!command) {
+        assert(monitor_ctrl_mode(mon) == 0);
+        goto help;
+    }
+
+    monitor_printf(mon, "Executing S2E command %s\n", command);
+
+    s2e_execute_cmd(command);
+
+    return;
+
+    help:
+        help_cmd(mon, "info");
+}
+
+static void do_s2e_info(Monitor *mon)
+{
+    monitor_printf(mon, "Execute S2E command\n");
+}
+
+extern int g_s2e_enable_signals;
+static void do_s2e_disable(Monitor *mon, const QDict *params, QObject **ret_data)
+{
+    g_s2e_enable_signals = false;
+    extern CPUState *env;
+    tb_flush(env);
+    monitor_printf(mon, "Status: %d\n", g_s2e_enable_signals);
+}
+
+static void do_s2e_crashdump(Monitor *mon, const QDict *params, QObject **ret_data)
+{
+    s2e_execute_cmd("c=WindowsCrashDumpInvoker(); c:generateCrashDump('dump');");
+}
+
+#endif
 
 static void do_singlestep(Monitor *mon, const char *option)
 {
@@ -1667,6 +1709,16 @@ static const mon_cmd_t mon_cmds[] = {
 
 /* Please update qemu-monitor.hx when adding or changing commands */
 static const mon_cmd_t info_cmds[] = {
+#ifdef CONFIG_S2E
+    {
+        .name       = "s2e",
+        .args_type  = "command:s",
+        .params     = "command",
+        .help       = "Execute an S2E command",
+        .mhandler.info = do_s2e_info,
+    },
+#endif
+
     { "version", "", do_info_version,
       "", "show the version of QEMU" },
     { "network", "", do_info_network,

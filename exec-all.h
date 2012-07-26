@@ -70,11 +70,19 @@ extern uint32_t gen_opc_hflags[OPC_BUF_SIZE];
 void gen_intermediate_code(CPUState *env, struct TranslationBlock *tb);
 void gen_intermediate_code_pc(CPUState *env, struct TranslationBlock *tb);
 void restore_state_to_opc(CPUState *env, struct TranslationBlock *tb, int pc_pos);
+#ifdef CONFIG_S2E
+int cpu_gen_llvm(CPUState *env, TranslationBlock *tb);
+#endif
 
 unsigned long code_gen_max_block_size(void);
 void cpu_gen_init(void);
 int cpu_gen_code(CPUState *env, struct TranslationBlock *tb,
                  int *gen_code_size_ptr);
+
+#ifdef CONFIG_S2E
+void cpu_restore_icount(CPUState *env);
+#endif
+
 int cpu_restore_state(struct TranslationBlock *tb,
                       CPUState *env, unsigned long searched_pc);
 void cpu_resume_from_signal(CPUState *env1, void *puc);
@@ -120,6 +128,26 @@ static inline int tlb_set_page(CPUState *env1, target_ulong vaddr,
 
 #if defined(_ARCH_PPC) || defined(__x86_64__) || defined(__arm__) || defined(__i386__)
 #define USE_DIRECT_JUMP
+#endif
+
+#ifdef CONFIG_LLVM
+struct TCGLLVMTranslationBlock;
+struct TCGLLVMContext;
+#ifdef __cplusplus
+namespace llvm { class Function; }
+namespace s2e { class S2ETranslationBlock; }
+using llvm::Function;
+using s2e::S2ETranslationBlock;
+#else
+struct Function;
+struct S2ETranslationBlock;
+#endif
+#endif
+#ifdef CONFIG_S2E
+enum JumpType
+{
+    JT_RET, JT_LRET
+};
 #endif
 
 struct TranslationBlock {
@@ -172,6 +200,26 @@ struct TranslationBlock {
 #endif  // CONFIG_MEMCHECK
 
     uint32_t icount;
+
+#ifdef CONFIG_LLVM
+    /* pointer to LLVM translated code */
+    struct TCGLLVMContext *tcg_llvm_context;
+    struct Function *llvm_function;
+    uint8_t *llvm_tc_ptr;
+    uint8_t *llvm_tc_end;
+#endif
+
+#ifdef CONFIG_S2E
+    uint64_t reg_rmask; /* Registers that TB reads (before overwritting) */
+    uint64_t reg_wmask; /* Registers that TB writes */
+    uint64_t helper_accesses_mem; /* True if contains helpers that access mem */
+
+    enum ETranslationBlockType s2e_tb_type;
+    struct S2ETranslationBlock* s2e_tb;
+    struct TranslationBlock* s2e_tb_next[2];
+    uint64_t pcOfLastInstr; /* XXX: hack for call instructions */
+#endif
+
 };
 
 static inline unsigned int tb_jmp_cache_hash_page(target_ulong pc)
@@ -333,6 +381,11 @@ static inline void tb_add_jump(TranslationBlock *tb, int n,
         /* add in TB jmp circular list */
         tb->jmp_next[n] = tb_next->jmp_first;
         tb_next->jmp_first = (TranslationBlock *)((long)(tb) | (n));
+
+#ifdef CONFIG_S2E
+        tb->s2e_tb_next[n] = tb_next;
+#endif
+
     }
 }
 
@@ -417,5 +470,9 @@ CPUDebugExcpHandler *cpu_set_debug_excp_handler(CPUDebugExcpHandler *handler);
 
 /* vl.c */
 extern int singlestep;
+#if defined(CONFIG_LLVM) && !defined(CONFIG_S2E)
+extern int generate_llvm;
+extern int execute_llvm;
+#endif
 
 #endif

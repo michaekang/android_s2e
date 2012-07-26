@@ -30,6 +30,13 @@
 #include "disas.h"
 #include "tcg.h"
 #include "qemu-timer.h"
+#ifdef CONFIG_LLVM
+#include "tcg-llvm.h"
+#endif
+
+#ifdef CONFIG_S2E
+#include "s2e/s2e_qemu.h"
+#endif
 
 /* code generation context */
 TCGContext tcg_ctx;
@@ -138,6 +145,16 @@ int cpu_gen_code(CPUState *env, TranslationBlock *tb, int *gen_code_size_ptr)
 #endif
     gen_code_size = tcg_gen_code(s, gen_code_buf);
     *gen_code_size_ptr = gen_code_size;
+
+#ifdef CONFIG_S2E
+    tcg_calc_regmask(s, &tb->reg_rmask, &tb->reg_wmask,
+                     &tb->helper_accesses_mem);
+#endif
+#if defined(CONFIG_LLVM) && !defined(CONFIG_S2E)
+    if(generate_llvm)
+        tcg_llvm_gen_code(tcg_llvm_ctx, s, tb);
+#endif
+
 #ifdef CONFIG_PROFILER
     s->code_time += profile_getclock();
     s->code_in_len += tb->size;
@@ -164,15 +181,47 @@ int cpu_gen_code(CPUState *env, TranslationBlock *tb, int *gen_code_size_ptr)
         qemu_log("\n");
         qemu_log_flush();
     }
+#if defined(CONFIG_LLVM) && !defined(CONFIG_S2E)
+    if(generate_llvm && qemu_loglevel_mask(CPU_LOG_LLVM_ASM)
+            && tb->llvm_tc_ptr) {
+        ptrdiff_t size = tb->llvm_tc_end - tb->llvm_tc_ptr;
+        qemu_log("OUT (LLVM ASM) [size=%ld] (%s)\n", size,
+                    tcg_llvm_get_func_name(tb));
+        log_disas((void*) tb->llvm_tc_ptr, size);
+        qemu_log("\n");
+        qemu_log_flush();
+    }
+#endif
+
 #endif
     return 0;
 }
+#ifdef CONFIG_S2E
+void cpu_restore_icount(CPUState *env)
+{
+    if(use_icount) {
+        /* If we are not executing TB, s2e_icoun equals s2e_icount_after_tb */
+        if(env->s2e_current_tb) {
+            assert(env->s2e_icount_after_tb - env->s2e_icount +
+                            env->icount_decr.u16.low <= 0xffff);
+            env->icount_decr.u16.low += (env->s2e_icount_after_tb - env->s2e_icount);
+            env->s2e_icount_after_tb = env->s2e_icount;
+            env->s2e_icount_before_tb = env->s2e_icount;
+        } else {
+            assert(env->s2e_icount == env->s2e_icount_after_tb);
+        }
+        assert(env->s2e_icount == qemu_icount - env->icount_decr.u16.low
+                                             - env->icount_extra);
+    }
+}
+#endif
 
 /* The cpu state corresponding to 'searched_pc' is restored.
  */
 int cpu_restore_state(TranslationBlock *tb,
                       CPUState *env, unsigned long searched_pc)
 {
+#ifndef CONFIG_S2E
     TCGContext *s = &tcg_ctx;
     int j;
     unsigned long tc_ptr;
@@ -220,6 +269,7 @@ int cpu_restore_state(TranslationBlock *tb,
 #ifdef CONFIG_PROFILER
     s->restore_time += profile_getclock() - ti;
     s->restore_count++;
+#endif
 #endif
     return 0;
 }

@@ -4,6 +4,9 @@
 
 static TCGArg *icount_arg;
 static int icount_label;
+#ifdef CONFIG_S2E
+static TCGArg *icount_arg1;
+#endif
 
 static inline void gen_icount_start(void)
 {
@@ -21,6 +24,16 @@ static inline void gen_icount_start(void)
 
     tcg_gen_brcondi_i32(TCG_COND_LT, count, 0, icount_label);
     tcg_gen_st16_i32(count, cpu_env, offsetof(CPUState, icount_decr.u16.low));
+#ifdef CONFIG_S2E
+    TCGv_i64 s2e_icount = tcg_temp_local_new_i64();
+    tcg_gen_ld_i64(s2e_icount, cpu_env, offsetof(CPUState, s2e_icount));
+    tcg_gen_st_i64(s2e_icount, cpu_env, offsetof(CPUState, s2e_icount_before_tb));
+    icount_arg1 = gen_opparam_ptr + 1;
+    tcg_gen_addi_i64(s2e_icount, s2e_icount, 0xdeadbeef);
+    tcg_gen_st_i64(s2e_icount, cpu_env, offsetof(CPUState, s2e_icount_after_tb));
+    tcg_temp_free_i64(s2e_icount);
+#endif
+
     tcg_temp_free_i32(count);
 }
 
@@ -28,6 +41,10 @@ static void gen_icount_end(TranslationBlock *tb, int num_insns)
 {
     if (use_icount) {
         *icount_arg = num_insns;
+#ifdef CONFIG_S2E
+        *icount_arg1 = num_insns;
+#endif
+
         gen_set_label(icount_label);
         tcg_gen_exit_tb((tcg_target_long)tb + 2);
     }
