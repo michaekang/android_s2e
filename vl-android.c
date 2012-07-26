@@ -205,7 +205,7 @@ int qemu_main(int argc, char **argv, char **envp);
 #include "android/hw-control.h"
 #include "android/core-init-utils.h"
 #include "android/audio-test.h"
-#ifdef CONFIG_LLVM
+#ifdef CONFIG_S2E
 #include <tcg-llvm.h>
 #endif
 
@@ -2723,6 +2723,7 @@ int main(int argc, char **argv, char **envp)
                 }
                 break;
 #ifdef CONFIG_S2E
+#if 0
             case QEMU_OPTION_s2e_config_file:
               s2e_config_file = optarg;
               break;
@@ -2783,7 +2784,7 @@ int main(int argc, char **argv, char **envp)
                 g_fake_pci.fake_pci_resources[PCI_ROM_SLOT] = region;
               }
               break;
-
+#endif
 #endif
 
             case QEMU_OPTION_initrd:
@@ -3569,6 +3570,7 @@ int main(int argc, char **argv, char **envp)
                 break;
 #endif
 #ifdef CONFIG_S2E
+#if 0
             case QEMU_OPTION_always_klee:
                 execute_always_klee = 1;
                 break;
@@ -3581,6 +3583,7 @@ int main(int argc, char **argv, char **envp)
                     s2e_max_processes = 1;
                 }
                 break;
+#endif
 #endif
 
             case QEMU_OPTION_snapshot_no_time_update:
@@ -4514,7 +4517,7 @@ int main(int argc, char **argv, char **envp)
     }
     */
     s2e_initialize_execution(g_s2e, g_s2e_state, execute_always_klee);
-    s2e_register_dirty_mask(g_s2e, g_s2e_state, (uint64_t)phys_ram_dirty, last_ram_offset >> TARGET_PAGE_BITS);
+    s2e_register_dirty_mask(g_s2e, g_s2e_state, (uint64_t)(ram_list.phys_dirty), last_ram_offset() >> TARGET_PAGE_BITS);
     s2e_on_initialization_complete();
 #endif
 
