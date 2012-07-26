@@ -748,6 +748,8 @@ uint64_t S2EExecutionState::getPhysicalAddress(uint64_t virtualAddress) const
     return physicalAddress | (virtualAddress & ~TARGET_PAGE_MASK);
 }
 
+
+
 uint64_t S2EExecutionState::getHostAddress(uint64_t address,
                                            AddressType addressType) const
 {
@@ -759,10 +761,12 @@ uint64_t S2EExecutionState::getHostAddress(uint64_t address,
                 return (uint64_t) -1;
         }
 
+	extern void* qemu_get_phys_ram_ptr(ram_addr_t paddr);
         /* We can not use qemu_get_ram_ptr directly. Mapping of IO memory
            can be modified after memory registration and qemu_get_ram_ptr will
            return incorrect values in such cases */
         hostAddress = (uint64_t) qemu_get_phys_ram_ptr(hostAddress);
+
         if(!hostAddress)
             return (uint64_t) -1;
 

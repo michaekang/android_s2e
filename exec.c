@@ -136,7 +136,6 @@ int use_icount = 1;
 /* Current instruction counter.  While executing translated code this may
    include some instructions that have not yet been executed.  */
 int64_t qemu_icount;
-
 typedef struct PageDesc {
     /* list of TBs intersecting this ram page */
     TranslationBlock *first_tb;
@@ -148,12 +147,13 @@ typedef struct PageDesc {
     unsigned long flags;
 #endif
 } PageDesc;
-
 typedef struct PhysPageDesc {
     /* offset in host memory of the page + io_index in the low bits */
     ram_addr_t phys_offset;
     ram_addr_t region_offset;
 } PhysPageDesc;
+
+
 
 #define L2_BITS 10
 #if defined(CONFIG_USER_ONLY) && defined(TARGET_VIRT_ADDR_SPACE_BITS)
@@ -390,6 +390,13 @@ static PhysPageDesc *phys_page_find_alloc(target_phys_addr_t index, int alloc)
 static inline PhysPageDesc *phys_page_find(target_phys_addr_t index)
 {
     return phys_page_find_alloc(index, 0);
+}
+void* qemu_get_phys_ram_ptr(ram_addr_t paddr)
+{
+    PhysPageDesc *p = phys_page_find(paddr >> TARGET_PAGE_BITS);
+    if(!p)
+        return NULL;
+    return qemu_get_ram_ptr(p->phys_offset & TARGET_PAGE_MASK);
 }
 
 #if !defined(CONFIG_USER_ONLY)
