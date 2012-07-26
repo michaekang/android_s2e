@@ -1710,6 +1710,7 @@ static const mon_cmd_t mon_cmds[] = {
 /* Please update qemu-monitor.hx when adding or changing commands */
 static const mon_cmd_t info_cmds[] = {
 #ifdef CONFIG_S2E
+#if 0
     {
         .name       = "s2e",
         .args_type  = "command:s",
@@ -1717,6 +1718,10 @@ static const mon_cmd_t info_cmds[] = {
         .help       = "Execute an S2E command",
         .mhandler.info = do_s2e_info,
     },
+	 "s2e", "command:s", do_s2e_info,
+      "command", "Execute an S2E command" },
+
+#endif
 #endif
 
     { "version", "", do_info_version,
