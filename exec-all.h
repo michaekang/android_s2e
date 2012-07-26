@@ -148,6 +148,15 @@ enum JumpType
 {
     JT_RET, JT_LRET
 };
+
+enum ETranslationBlockType
+{
+    TB_DEFAULT=0,
+    TB_JMP, TB_JMP_IND,
+    TB_COND_JMP, TB_COND_JMP_IND,
+    TB_CALL, TB_CALL_IND, TB_REP, TB_RET
+};
+
 #endif
 
 struct TranslationBlock {
@@ -403,9 +412,14 @@ extern int tb_invalidated_flag;
 
 #if !defined(CONFIG_USER_ONLY)
 
+#ifndef CONFIG_S2E
 void tlb_fill(target_ulong addr, int is_write, int mmu_idx,
               void *retaddr);
 
+#else
+void tlb_fill(target_ulong addr, target_ulong page_addr, int is_write, int mmu_idx,
+              void *retaddr);
+#endif
 #include "softmmu_defs.h"
 
 #define ACCESS_TYPE (NB_MMU_MODES + 1)
