@@ -18,9 +18,87 @@
  */
 #include "exec.h"
 #include "helper.h"
+#include <assert.h>
+#include "host-utils.h"
+#ifdef CONFIG_TRACE
+#include "trace.h"
+#endif
+
+#include <string.h>
+
+#ifdef S2E_LLVM_LIB
+	int semihosting_enabled = 0;
+	int tracing = 0;
+#else
+	extern int semihosting_enabled;
+#endif
 
 #define SIGNBIT (uint32_t)0x80000000
 #define SIGNBIT64 ((uint64_t)1 << 63)
+#ifdef S2E_LLVM_LIB
+void klee_make_symbolic(void *addr, unsigned nbytes, const char *name);
+uint8_t klee_int8(const char *name);
+uint16_t klee_int16(const char *name);
+uint32_t klee_int32(const char *name);
+void uint32_to_string(uint32_t n, char *str);
+void trace_port(char *buf, const char *prefix, uint32_t port, uint32_t pc);
+
+uint8_t klee_int8(const char *name) {
+    uint8_t ret;
+    klee_make_symbolic(&ret, sizeof(ret), name);
+    return ret;
+}
+
+uint16_t klee_int16(const char *name) {
+    uint16_t ret;
+    klee_make_symbolic(&ret, sizeof(ret), name);
+    return ret;
+}
+
+uint32_t klee_int32(const char *name) {
+    uint32_t ret;
+    klee_make_symbolic(&ret, sizeof(ret), name);
+    return ret;
+}
+
+//Helpers to avoid relying on sprintf that does not work properly
+static char hextable[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b',
+'c', 'd', 'e', 'f'};
+void uint32_to_string(uint32_t n, char *str)
+{
+  str[0] = hextable[(n >> 28)];
+  str[1] = hextable[((n >> 24) & 0xF)];
+  str[2] = hextable[((n >> 20) & 0xF)];
+  str[3] = hextable[((n >> 16) & 0xF)];
+  str[4] = hextable[((n >> 12) & 0xF)];
+  str[5] = hextable[((n >> 8) & 0xF)];
+  str[6] = hextable[((n >> 4) & 0xF)];
+  str[7] = hextable[((n >> 0) & 0xF)];
+}
+
+void trace_port(char *buf, const char *prefix, uint32_t port, uint32_t pc)
+{
+    while(*prefix) {
+        *buf = *prefix;
+        ++buf; ++prefix;
+    }
+
+    uint32_to_string(port, buf);
+    buf+=8;
+    *buf = '_';
+    buf++;
+    uint32_to_string(pc, buf);
+    buf+=8;
+    *buf = 0;
+}
+
+#endif
+
+#ifndef S2E_LLVM_LIB
+#ifdef CONFIG_S2E
+struct CPUARMState* env = 0;
+#endif
+#endif
 
 void raise_exception(int tt)
 {
@@ -66,6 +144,30 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def,
 #define SHIFT 3
 #include "softmmu_template.h"
 
+#if defined(CONFIG_S2E) && !defined(S2E_LLVM_LIB)
+#undef MMUSUFFIX
+#define MMUSUFFIX _mmu_s2e_trace
+#define _raw _raw_s2e_trace
+
+#define SHIFT 0
+#include "softmmu_template.h"
+
+#define SHIFT 1
+#include "softmmu_template.h"
+
+#define SHIFT 2
+#include "softmmu_template.h"
+
+#define SHIFT 3
+#include "softmmu_template.h"
+
+#undef _raw
+#endif
+
+#ifdef CONFIG_S2E
+#include <s2e/s2e_qemu.h>
+#endif
+
 /* try to fill the TLB and return an exception if error. If retaddr is
    NULL, it means that the function was called in C code (i.e. not
    from generated code or from helper.c) */
@@ -81,8 +183,26 @@ void tlb_fill (target_ulong addr, int is_write, int mmu_idx, void *retaddr)
        generated code */
     saved_env = env;
     env = cpu_single_env;
+#ifdef CONFIG_S2E
+    s2e_on_tlb_miss(g_s2e, g_s2e_state, addr, is_write);
+    ret = cpu_arm_handle_mmu_fault(env, page_addr,
+                                   is_write, mmu_idx, 1);
+#else
     ret = cpu_arm_handle_mmu_fault(env, addr, is_write, mmu_idx, 1);
+#endif
+
     if (unlikely(ret)) {
+#ifdef CONFIG_S2E
+        /* In S2E we pass page address instead of addr to cpu_arm_handle_mmu_fault,
+           since the latter can be symbolic while the former is always concrete.
+           To compensate, we reset fault address here. */
+        if(env->exception_index == EXCP_PREFETCH_ABORT || env->exception_index == EXCP_DATA_ABORT) {
+            assert(1 && "handle coprocessor exception properly");
+        }
+        if(use_icount)
+            cpu_restore_icount(env);
+#endif
+
         if (retaddr) {
             /* now we have a real cpu fault */
             pc = (unsigned long)retaddr;
@@ -93,6 +213,11 @@ void tlb_fill (target_ulong addr, int is_write, int mmu_idx, void *retaddr)
                 cpu_restore_state(tb, env, pc);
             }
         }
+
+#ifdef CONFIG_S2E
+s2e_on_page_fault(g_s2e, g_s2e_state, addr, is_write);
+#endif
+
         raise_exception(env->exception_index);
     }
     env = saved_env;
@@ -139,6 +264,9 @@ uint32_t HELPER(get_cp)(CPUState *env, uint32_t insn)
     return 0;
 }
 
+#endif
+#ifdef CONFIG_S2E
+#include <s2e/s2e_qemu.h>
 #endif
 
 /* FIXME: Pass an axplicit pointer to QF to CPUState, and move saturating
@@ -284,6 +412,79 @@ void HELPER(exception)(uint32_t excp)
     env->exception_index = excp;
     cpu_loop_exit();
 }
+#ifdef CONFIG_S2E
+
+/*
+ * S2E: just a helper for switching execution mode during state restore
+ */
+
+void switch_mode_concrete(CPUState *env, int mode)
+{
+    int old_mode;
+
+    old_mode = env->uncached_cpsr & CPSR_M;
+    if (mode == old_mode)
+        return;
+
+    if (old_mode == ARM_CPU_MODE_FIQ) {
+        memcpy (env->fiq_regs, env->regs + 8, 5 * sizeof(uint32_t));
+    	memcpy (env->regs + 8, env->usr_regs, 5 * sizeof(uint32_t));
+
+    } else if (mode == ARM_CPU_MODE_FIQ) {
+        memcpy (env->usr_regs, env->regs + 8, 5 * sizeof(uint32_t));
+        memcpy (env->regs + 8, env->fiq_regs, 5 * sizeof(uint32_t));
+    }
+}
+
+void cpsr_write_concrete(CPUARMState *env, uint32_t val, uint32_t mask)
+{
+
+    if (mask & CPSR_NZCV) {
+        env->ZF = (~val) & CPSR_Z;
+        env->NF = val;
+        env->CF = (val >> 29) & 1;
+        env->VF = (val << 3) & 0x80000000;
+    }
+    if (mask & CPSR_Q)
+        env->QF = ((val & CPSR_Q) != 0);
+    if (mask & CPSR_T)
+        env->thumb = ((val & CPSR_T) != 0);
+    if (mask & CPSR_IT_0_1) {
+        env->condexec_bits &= ~3;
+        env->condexec_bits |= (val >> 25) & 3;
+    }
+    if (mask & CPSR_IT_2_7) {
+        env->condexec_bits &= 3;
+        env->condexec_bits |= (val >> 8) & 0xfc;
+    }
+    if (mask & CPSR_GE) {
+        env->GE = (val >> 16) & 0xf;
+    }
+
+    if ((env->uncached_cpsr ^ val) & mask & CPSR_M) {
+        switch_mode_concrete(env, val & CPSR_M);
+    }
+    mask &= ~CACHED_CPSR_BITS;
+    env->uncached_cpsr = (env->uncached_cpsr & ~mask) | (val & mask);
+}
+
+/*
+ * S2E: just a helper for dumping concrete cpustate
+ */
+
+uint32_t cpsr_read_concrete(CPUARMState *env)
+{
+
+    int ZF;
+    ZF = (env->ZF == 0);
+    return env->uncached_cpsr | (env->NF & 0x80000000) | (ZF << 30) |
+        (env->CF << 29) | ((env->VF & 0x80000000) >> 3) | (env->QF << 27)
+        | (env->thumb << 5) | ((env->condexec_bits & 3) << 25)
+        | ((env->condexec_bits & 0xfc) << 8)
+        | (env->GE << 16);
+
+}
+#endif
 
 uint32_t HELPER(cpsr_read)(void)
 {

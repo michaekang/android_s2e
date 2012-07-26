@@ -30,6 +30,9 @@
 #include "cpu-defs.h"
 
 #include "softfloat.h"
+#ifdef CONFIG_S2E
+#include <s2e/s2e_qemu.h>
+#endif
 
 #define TARGET_HAS_ICE 1
 
@@ -237,6 +240,28 @@ typedef struct CPUARMState {
     void *nvic;
     struct arm_boot_info *boot_info;
 } CPUARMState;
+#if defined(CONFIG_S2E) && !defined(S2E_LLVM_LIB)
+/* Macros to access registers */
+static inline target_ulong __RR_env_raw(CPUARMState* cpuState,
+                                        unsigned offset, unsigned size) {
+    target_ulong result = 0;
+    s2e_read_register_concrete(g_s2e, g_s2e_state, cpuState,
+                               offset, (uint8_t*) &result, size);
+    return result;
+}
+static inline void __WR_env_raw(CPUARMState* cpuState, unsigned offset,
+                                target_ulong value, unsigned size) {
+    s2e_write_register_concrete(g_s2e, g_s2e_state, cpuState,
+                                offset, (uint8_t*) &value, size);
+}
+#define RR_cpu(cpu, reg) ((typeof(cpu->reg)) \
+            __RR_env_raw(cpu, offsetof(CPUARMState, reg), sizeof(cpu->reg)))
+#define WR_cpu(cpu, reg, value) __WR_env_raw(cpu, offsetof(CPUARMState, reg), \
+            (target_ulong) value, sizeof(cpu->reg))
+#else
+#define RR_cpu(cpu, reg) cpu->reg
+#define WR_cpu(cpu, reg, value) cpu->reg = value
+#endif
 
 CPUARMState *cpu_arm_init(const char *cpu_model);
 void arm_translate_init(void);
@@ -244,6 +269,10 @@ int cpu_arm_exec(CPUARMState *s);
 void cpu_arm_close(CPUARMState *s);
 void do_interrupt(CPUARMState *);
 void switch_mode(CPUARMState *, int);
+#ifdef CONFIG_S2E
+void switch_mode_concrete(CPUARMState *, int);
+#endif
+
 uint32_t do_arm_semihosting(CPUARMState *env);
 
 /* you can call this signal handler from your SIGBUS and SIGSEGV
@@ -289,6 +318,14 @@ static inline void cpu_set_tls(CPUARMState *env, target_ulong newtls)
 uint32_t cpsr_read(CPUARMState *env);
 /* Set the CPSR.  Note that some bits of mask must be all-set or all-clear.  */
 void cpsr_write(CPUARMState *env, uint32_t val, uint32_t mask);
+/*
+ * S2E helpers to avoid concretization when logging or storing/loading snapshots
+ */
+#ifdef CONFIG_S2E
+uint32_t cpsr_read_concrete(CPUARMState *env);
+void cpsr_write_concrete(CPUARMState *env, uint32_t val, uint32_t mask);
+#endif
+
 
 /* Return the current xPSR value.  */
 static inline uint32_t xpsr_read(CPUARMState *env)

@@ -9,7 +9,12 @@ void cpu_save(QEMUFile *f, void *opaque)
     for (i = 0; i < 16; i++) {
         qemu_put_be32(f, env->regs[i]);
     }
+#ifdef CONFIG_S2E
+    qemu_put_be32(f, cpsr_read_concrete(env));
+#else
     qemu_put_be32(f, cpsr_read(env));
+#endif
+
     qemu_put_be32(f, env->spsr);
     for (i = 0; i < 6; i++) {
         qemu_put_be32(f, env->banked_spsr[i]);
@@ -125,7 +130,12 @@ int cpu_load(QEMUFile *f, void *opaque, int version_id)
     val = qemu_get_be32(f);
     /* Avoid mode switch when restoring CPSR.  */
     env->uncached_cpsr = val & CPSR_M;
+#ifdef CONFIG_S2E
+    cpsr_write_concrete(env, val, 0xffffffff);
+#else
     cpsr_write(env, val, 0xffffffff);
+#endif
+
     env->spsr = qemu_get_be32(f);
     for (i = 0; i < 6; i++) {
         env->banked_spsr[i] = qemu_get_be32(f);
