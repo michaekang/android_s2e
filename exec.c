@@ -1946,8 +1946,8 @@ static void tlb_unprotect_code_phys(CPUState *env, ram_addr_t ram_addr,
                                     target_ulong vaddr)
 {
 #ifdef CONFIG_S2E
-    uint8_t m = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
-    s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS], m | CODE_DIRTY_FLAG);
+    uint8_t m = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
+    s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS], m | CODE_DIRTY_FLAG);
 #else
 
     cpu_physical_memory_set_dirty_flags(ram_addr, CODE_DIRTY_FLAG);
@@ -1981,7 +1981,11 @@ void cpu_physical_memory_reset_dirty(ram_addr_t start, ram_addr_t end,
     if (length == 0)
         return;
 #ifdef CONFIG_S2E
-    uint64_t s = (uint64_t)phys_ram_dirty + (start >> TARGET_PAGE_BITS);
+	int len, mask;
+	len = length >> TARGET_PAGE_BITS;
+    mask = ~dirty_flags;
+
+    uint64_t s = (uint64_t)(ram_list.phys_dirty) + (start >> TARGET_PAGE_BITS);
     for(i = 0; i < len; i++) {
         uint8_t val = s2e_read_dirty_mask(s + i);
         s2e_write_dirty_mask(s + i, val & mask);
@@ -2950,7 +2954,7 @@ static void notdirty_mem_writeb(void *opaque, target_phys_addr_t ram_addr,
     int dirty_flags;
 
 #ifdef CONFIG_S2E
-    dirty_flags = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
+    dirty_flags = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
 #else
 
     dirty_flags = cpu_physical_memory_get_dirty_flags(ram_addr);
@@ -2959,7 +2963,7 @@ static void notdirty_mem_writeb(void *opaque, target_phys_addr_t ram_addr,
 #if !defined(CONFIG_USER_ONLY)
         tb_invalidate_phys_page_fast(ram_addr, 1);
         #ifdef CONFIG_S2E
-            dirty_flags = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
+            dirty_flags = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
         #else
         dirty_flags = cpu_physical_memory_get_dirty_flags(ram_addr);
 	#endif
@@ -2969,7 +2973,7 @@ static void notdirty_mem_writeb(void *opaque, target_phys_addr_t ram_addr,
     dirty_flags |= (0xff & ~CODE_DIRTY_FLAG);
 
 #ifdef CONFIG_S2E
-    s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS], dirty_flags);
+    s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS], dirty_flags);
 #else
 
     cpu_physical_memory_set_dirty_flags(ram_addr, dirty_flags);
@@ -2986,7 +2990,7 @@ static void notdirty_mem_writew(void *opaque, target_phys_addr_t ram_addr,
     int dirty_flags;
 
 #ifdef CONFIG_S2E
-    dirty_flags = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
+    dirty_flags = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
 #else
 
     dirty_flags = cpu_physical_memory_get_dirty_flags(ram_addr);
@@ -3011,7 +3015,7 @@ static void notdirty_mem_writel(void *opaque, target_phys_addr_t ram_addr,
 {
     int dirty_flags;
     #ifdef CONFIG_S2E
-        dirty_flags = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
+        dirty_flags = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
     #else
 
     dirty_flags = cpu_physical_memory_get_dirty_flags(ram_addr);
@@ -3020,7 +3024,7 @@ static void notdirty_mem_writel(void *opaque, target_phys_addr_t ram_addr,
 #if !defined(CONFIG_USER_ONLY)
         tb_invalidate_phys_page_fast(ram_addr, 4);
        #ifdef CONFIG_S2E
-            dirty_flags = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
+            dirty_flags = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
         #else
 
         dirty_flags = cpu_physical_memory_get_dirty_flags(ram_addr);
@@ -3030,7 +3034,7 @@ static void notdirty_mem_writel(void *opaque, target_phys_addr_t ram_addr,
     stl_p(qemu_get_ram_ptr(ram_addr), val);
     dirty_flags |= (0xff & ~CODE_DIRTY_FLAG);
     #ifdef CONFIG_S2E
-        s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS], dirty_flags);
+        s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS], dirty_flags);
     #else
 
     cpu_physical_memory_set_dirty_flags(ram_addr, dirty_flags);
@@ -3044,18 +3048,18 @@ static void notdirty_mem_writel(void *opaque, target_phys_addr_t ram_addr,
 uintptr_t s2e_notdirty_mem_write(target_phys_addr_t ram_addr)
 {
     int dirty_flags;
-    dirty_flags = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
+    dirty_flags = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
 
     if (!(dirty_flags & CODE_DIRTY_FLAG)) {
 #if !defined(CONFIG_USER_ONLY)
         tb_invalidate_phys_page_fast(ram_addr, 4);
-        dirty_flags = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS]);
+        dirty_flags = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS]);
 #endif
     }
 
     dirty_flags |= (0xff & ~CODE_DIRTY_FLAG);
 
-    s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[ram_addr >> TARGET_PAGE_BITS], dirty_flags);
+    s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS], dirty_flags);
 
     /* we remove the notdirty callback only if the code has been
        flushed */
@@ -3564,8 +3568,8 @@ void cpu_physical_memory_rw(target_phys_addr_t addr, uint8_t *buf,
                     tb_invalidate_phys_page_range(addr1, addr1 + l, 0);
                     /* set dirty bit */
 #ifdef CONFIG_S2E
-                    uint8_t val = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS]);
-                    s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
+                    uint8_t val = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS]);
+                    s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
 #else
 
                     cpu_physical_memory_set_dirty_flags(
@@ -3806,8 +3810,8 @@ void cpu_physical_memory_unmap(void *buffer, target_phys_addr_t len,
                     tb_invalidate_phys_page_range(addr1, addr1 + l, 0);
                     /* set dirty bit */
 #ifdef CONFIG_S2E
-                    uint8_t val = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS]);
-                    s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
+                    uint8_t val = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS]);
+                    s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
 #else
 
                     cpu_physical_memory_set_dirty_flags(
@@ -3946,8 +3950,8 @@ void stl_phys_notdirty(target_phys_addr_t addr, uint32_t val)
                 /* invalidate code */
                 tb_invalidate_phys_page_range(addr1, addr1 + 4, 0);
 #ifdef CONFIG_S2E
-                    uint8_t val = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS]);
-                    s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
+                    uint8_t val = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS]);
+                    s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
 #else
 
                 /* set dirty bit */
@@ -4021,8 +4025,8 @@ void stl_phys(target_phys_addr_t addr, uint32_t val)
             /* invalidate code */
             tb_invalidate_phys_page_range(addr1, addr1 + 4, 0);
 #ifdef CONFIG_S2E
-            uint8_t val = s2e_read_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS]);
-            s2e_write_dirty_mask((uint64_t)&phys_ram_dirty[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
+            uint8_t val = s2e_read_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS]);
+            s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[addr1 >> TARGET_PAGE_BITS], val | (0xff & ~CODE_DIRTY_FLAG));
 #else
 
             /* set dirty bit */
