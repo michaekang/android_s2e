@@ -37,6 +37,7 @@
 extern "C" {
 #include "config.h"
 #include "qemu-common.h"
+#include "exec-all.h"
 #include "sysemu.h"
 
 #include "tcg-llvm.h"
