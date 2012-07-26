@@ -246,9 +246,9 @@ volatile sig_atomic_t exit_request;
 
 int cpu_exec(CPUState *env1)
 {
-#ifndef CONFIG_S2E
+//#ifdef CONFIG_S2E
     volatile host_reg_t saved_env_reg;
-#endif
+//#endif
     int ret, interrupt_request;
     TranslationBlock *tb;
     uint8_t *tc_ptr;
