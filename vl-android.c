@@ -2729,7 +2729,7 @@ int main(int argc, char **argv, char **envp)
             case QEMU_OPTION_s2e_output_dir:
               s2e_output_dir = optarg;
               break;
-#else
+//#else
             case QEMU_OPTION_fake_pci_name:
               g_fake_pci.fake_pci_name = optarg;
               break;

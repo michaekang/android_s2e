@@ -176,7 +176,9 @@ static inline void glue(glue(st, SUFFIX), MEMSUFFIX)(target_ulong ptr, RES_TYPE 
         glue(glue(st, SUFFIX), _raw)((uint8_t *)physaddr, v);
     }
 }
-#endif
+
+#endif /* ACCESS_TYPE != (NB_MMU_MODES + 1)  */
+#else
 /* generic load/store macros */
 
 static inline RES_TYPE glue(glue(ld, USUFFIX), MEMSUFFIX)(target_ulong ptr)
@@ -286,6 +288,8 @@ static inline void glue(glue(st, SUFFIX), MEMSUFFIX)(target_ulong ptr, RES_TYPE 
 }
 
 #endif /* ACCESS_TYPE != (NB_MMU_MODES + 1) */
+
+#endif
 
 #if ACCESS_TYPE != (NB_MMU_MODES + 1)
 

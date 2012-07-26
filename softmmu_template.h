@@ -632,7 +632,7 @@ inline void glue(glue(io_write_chk, SUFFIX), MMUSUFFIX)(target_phys_addr_t physa
 
 #endif
 
-#if CONFIG_S2E
+#ifndef CONFIG_S2E
 void REGPARM glue(glue(__st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                  DATA_TYPE val,
                                                  int mmu_idx)
