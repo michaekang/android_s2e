@@ -21,6 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef TCG_H
+#define TCG_H
+
 #include "qemu-common.h"
 #include "tcg-target.h"
 #include "tcg-runtime.h"
@@ -503,4 +506,13 @@ extern uint8_t code_gen_prologue[];
     ((long REGPARM __attribute__ ((longcall)) (*)(void *))code_gen_prologue)(tb_ptr)
 #else
 #define tcg_qemu_tb_exec(tb_ptr) ((long REGPARM (*)(void *))code_gen_prologue)(tb_ptr)
+#endif
+#ifdef CONFIG_S2E
+void tcg_calc_regmask_ex(TCGContext *s, uint64_t *rmask, uint64_t *wmask,
+                      uint64_t *accesses_mem, uint16_t *opc, TCGArg *opparam);
+
+void tcg_calc_regmask(TCGContext *s, uint64_t *rmask, uint64_t *wmask,
+                      uint64_t *accesses_mem);
+#endif
+
 #endif
