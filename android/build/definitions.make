@@ -18,7 +18,7 @@ ifeq ($(strip $(SHOW)),)
 define pretty
 @echo $1
 endef
-hide := @
+#hide := @
 else
 define pretty
 endef
