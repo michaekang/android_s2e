@@ -68,7 +68,7 @@ static void tcg_target_qemu_prologue(TCGContext *s);
 static void patch_reloc(uint8_t *code_ptr, int type, 
                         tcg_target_long value, tcg_target_long addend);
 
-static TCGOpDef tcg_op_defs[] = {
+TCGOpDef tcg_op_defs[] = {
 #define DEF(s, oargs, iargs, cargs, flags) { #s, oargs, iargs, cargs, iargs + oargs + cargs, flags },
 #include "tcg-opc.h"
 #undef DEF
@@ -852,6 +852,33 @@ static TCGHelperInfo *tcg_find_helper(TCGContext *s, tcg_target_ulong val)
     }
     return NULL;
 }
+
+const char *tcg_helper_get_name(TCGContext *s, void *func)
+{
+    TCGHelperInfo *info = tcg_find_helper(s, (tcg_target_ulong) func);
+    return info ? info->name : NULL;
+}
+
+void tcg_helper_get_reg_mask(TCGContext *s, void *func,
+                             uint64_t* reg_rmask, uint64_t* reg_wmask,
+                             uint64_t* accesses_mem)
+{
+    TCGHelperInfo *info = tcg_find_helper(s, (tcg_target_ulong) func);
+    if(info) {
+        assert(func != NULL);
+        *reg_rmask = info->reg_rmask;
+        *reg_wmask = info->reg_wmask;
+        *accesses_mem = info->accesses_mem;
+    } else {
+        *reg_rmask = (uint64_t) -1;
+        *reg_wmask = (uint64_t) -1;
+#ifdef CONFIG_S2E
+#warning Change 0 to 1 here, but register S2E helpers before!
+        *accesses_mem = 0; /* XXX! */
+#endif
+    }
+}
+
 
 static const char * const cond_name[] =
 {

@@ -267,6 +267,10 @@ typedef struct TCGTemp {
 typedef struct TCGHelperInfo {
     tcg_target_ulong func;
     const char *name;
+    uint64_t reg_rmask;
+    uint64_t reg_wmask;
+    uint64_t accesses_mem;
+
 } TCGHelperInfo;
 
 typedef struct TCGContext TCGContext;
@@ -467,6 +471,7 @@ void tcg_add_target_add_op_defs(const TCGTargetOpDef *tdefs);
 #define tcg_sub_ptr tcg_sub_i32
 #define TCGv_ptr TCGv_i32
 #define GET_TCGV_PTR GET_TCGV_I32
+#define MAKE_TCGV_PTR MAKE_TCGV_I32
 #define tcg_global_reg_new_ptr tcg_global_reg_new_i32
 #define tcg_global_mem_new_ptr tcg_global_mem_new_i32
 #define tcg_temp_new_ptr tcg_temp_new_i32
@@ -477,6 +482,7 @@ void tcg_add_target_add_op_defs(const TCGTargetOpDef *tdefs);
 #define tcg_sub_ptr tcg_sub_i64
 #define TCGv_ptr TCGv_i64
 #define GET_TCGV_PTR GET_TCGV_I64
+#define MAKE_TCGV_PTR MAKE_TCGV_I64
 #define tcg_global_reg_new_ptr tcg_global_reg_new_i64
 #define tcg_global_mem_new_ptr tcg_global_mem_new_i64
 #define tcg_temp_new_ptr tcg_temp_new_i64
@@ -513,6 +519,7 @@ void tcg_calc_regmask_ex(TCGContext *s, uint64_t *rmask, uint64_t *wmask,
 
 void tcg_calc_regmask(TCGContext *s, uint64_t *rmask, uint64_t *wmask,
                       uint64_t *accesses_mem);
+extern TCGOpDef tcg_op_defs[];
 #endif
 
 #endif

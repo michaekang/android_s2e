@@ -40,6 +40,7 @@ extern "C" {
 #include "config.h"
 #include "qemu-common.h"
 #include "disas.h"
+#include "exec-all.h"
 
 #if defined(CONFIG_SOFTMMU)
 
