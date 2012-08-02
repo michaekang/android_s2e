@@ -287,9 +287,11 @@ LOCAL_LDLIBS += \
     $(EMULATOR_COMMON_LDLIBS) \
     $(EMULATOR_LIBQEMU_LDLIBS) \
     $(ELFF_LDLIBS) \
+	/home/ksh/git/build_s2e/stp/lib/libstp.a \
 
 LOCAL_SRC_FILES := \
     exec.c	\
+    target-arm/op_helper.c \
     tcg/tcg.c	\
     cpus.c 	\
     audio/audio.c \
