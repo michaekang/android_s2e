@@ -19,7 +19,7 @@ void REGPARM __stl_cmmu(target_ulong addr, uint32_t val, int mmu_idx);
 uint64_t REGPARM __ldq_cmmu(target_ulong addr, int mmu_idx);
 void REGPARM __stq_cmmu(target_ulong addr, uint64_t val, int mmu_idx);
 
-
+#if 1
 uint8_t REGPARM io_readb_mmu(target_phys_addr_t physaddr, target_ulong addr, void *retaddr);
 void REGPARM io_writeb_mmu(target_phys_addr_t physaddr, uint8_t val, target_ulong addr, void *retaddr);
 uint16_t REGPARM io_readw_mmu(target_phys_addr_t physaddr, target_ulong addr, void *retaddr);
@@ -28,7 +28,7 @@ uint32_t REGPARM io_readl_mmu(target_phys_addr_t physaddr, target_ulong addr, vo
 void REGPARM io_writel_mmu(target_phys_addr_t physaddr, uint32_t val, target_ulong addr, void *retaddr);
 uint64_t REGPARM io_readq_mmu(target_phys_addr_t physaddr, target_ulong addr, void *retaddr);
 void REGPARM io_writeq_mmu(target_phys_addr_t physaddr, uint64_t val, target_ulong addr, void *retaddr);
-
+#endif
 
 #ifdef CONFIG_S2E
 

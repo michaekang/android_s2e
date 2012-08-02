@@ -130,7 +130,7 @@ static const char *regnames[] =
 static inline void gen_instr_end(DisasContext *s)
 {
     if (!s->done_instr_end) {
-        s2e_on_translate_instruction_end(g_s2e, g_s2e_state, s->tb, s->insPc, s->useNextPc ? s->nextPc : (uint64_t)-1);
+        //s2e_on_translate_instruction_end(g_s2e, g_s2e_state, s->tb, s->insPc, s->useNextPc ? s->nextPc : (uint64_t)-1);
         s->done_instr_end = 1;
     }
 }
@@ -3481,8 +3481,8 @@ static inline void gen_goto_tb(DisasContext *s, int n, uint32_t dest)
         tcg_gen_goto_tb(n);
         gen_set_pc_im(dest);
 #ifdef CONFIG_S2E
-    s2e_on_translate_block_end(g_s2e, g_s2e_state,
-                               tb, s->insPc, 1, dest);
+    //s2e_on_translate_block_end(g_s2e, g_s2e_state,
+      //                         tb, s->insPc, 1, dest);
     gen_instr_end(s);
 #endif
 
@@ -3490,8 +3490,8 @@ static inline void gen_goto_tb(DisasContext *s, int n, uint32_t dest)
     } else {
         gen_set_pc_im(dest);
 #ifdef CONFIG_S2E
-    s2e_on_translate_block_end(g_s2e, g_s2e_state,
-                               tb, s->insPc, 1, dest);
+    //s2e_on_translate_block_end(g_s2e, g_s2e_state,
+      //                         tb, s->insPc, 1, dest);
     gen_instr_end(s);
 #endif
 
@@ -3599,8 +3599,8 @@ static void gen_exception_return(DisasContext *s, TCGv pc)
     tcg_temp_free_i32(tmp);
     s->is_jmp = DISAS_UPDATE;
 #ifdef CONFIG_S2E
-    s2e_on_translate_block_end(g_s2e, g_s2e_state,
-    		s->tb, s->insPc, 1, GET_TCGV_I32(pc));
+   // s2e_on_translate_block_end(g_s2e, g_s2e_state,
+    //		s->tb, s->insPc, 1, GET_TCGV_I32(pc));
         	gen_instr_end(s);
 #endif
 
@@ -9694,7 +9694,7 @@ static inline void gen_intermediate_code_internal(CPUState *env,
     dc->cpuState = env;
     tb->s2e_tb_type = TB_DEFAULT;
 
-    s2e_on_translate_block_start(g_s2e, g_s2e_state, tb, pc_start);
+    //s2e_on_translate_block_start(g_s2e, g_s2e_state, tb, pc_start);
     tmp64 = tcg_temp_new_i64();
     tcg_gen_movi_i64(tmp64, (uint64_t) tb);
     tcg_gen_st_i64(tmp64, cpu_env, offsetof(CPUState, s2e_current_tb));

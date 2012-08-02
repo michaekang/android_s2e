@@ -422,7 +422,7 @@ static inline int lduw_be_p(const void *ptr)
                   : "m" (*(uint16_t *)ptr));
     return val;
 #else
-    const uint8_t *b = ptr;
+    const uint8_t *b = (uint8_t *)ptr;
     return ((b[0] << 8) | b[1]);
 #endif
 }
@@ -437,7 +437,7 @@ static inline int ldsw_be_p(const void *ptr)
                   : "m" (*(uint16_t *)ptr));
     return (int16_t)val;
 #else
-    const uint8_t *b = ptr;
+    const uint8_t *b = (uint8_t *)ptr;
     return (int16_t)((b[0] << 8) | b[1]);
 #endif
 }
@@ -961,6 +961,9 @@ void run_on_cpu(CPUState *env, void (*func)(void *data), void *data);
 #define CPU_LOG_IOPORT     (1 << 7)
 #define CPU_LOG_TB_CPU     (1 << 8)
 #define CPU_LOG_RESET      (1 << 9)
+
+#define CPU_LOG_LLVM_IR    (1 << 10)
+#define CPU_LOG_LLVM_ASM   (1 << 11)
 
 /* define log items */
 typedef struct CPULogItem {

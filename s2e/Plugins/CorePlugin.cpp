@@ -39,6 +39,7 @@ extern "C" {
 #include <tcg.h>
 #include <tcg-op.h>
 #include <qemu-timer.h>
+#include <exec-all.h>
 
 #ifdef TARGET_ARM
 extern struct CPUARMState *env;
@@ -80,7 +81,7 @@ void CorePlugin::initializeTimers()
 {
     s2e()->getDebugStream() << "Initializing periodic timer" << std::endl;
     /* Initialize the timer handler */
-    m_Timer = qemu_new_timer(rt_clock, s2e_timer_cb, this);
+    m_Timer = qemu_new_timer(rt_clock, 0, s2e_timer_cb, this);
     qemu_mod_timer(m_Timer, qemu_get_clock(rt_clock) + 1000);
 }
 

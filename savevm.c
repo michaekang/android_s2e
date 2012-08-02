@@ -1077,13 +1077,13 @@ const char *s2e_qemu_get_se_idstr(void *se)
 void s2e_qemu_save_state(void *se)
 {
     SaveStateEntry *sse = (SaveStateEntry*)se;
-    vmstate_save(NULL, sse);
+    //vmstate_save(NULL, sse);
 }
 
 void s2e_qemu_load_state(void *se)
 {
     SaveStateEntry *sse = (SaveStateEntry*)se;
-    vmstate_load(NULL, sse, sse->version_id);
+    //vmstate_load(NULL, sse, sse->version_id);
 }
 #endif
 
