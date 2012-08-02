@@ -125,7 +125,8 @@ fi
 # generate 32-bit binaries on Linux x86_64.
 #
 if [ "$OPTION_TRY_64" != "yes" ] ; then
-    force_32bit_binaries
+    #force_32bit_binaries
+    echo "trying to generate 64bit"
 fi
 
 TARGET_OS=$OS
