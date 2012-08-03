@@ -35,6 +35,7 @@
 
 #define SIGNBIT (uint32_t)0x80000000
 #define SIGNBIT64 ((uint64_t)1 << 63)
+//#ifdef CONFIG_S2E
 #ifdef S2E_LLVM_LIB
 void klee_make_symbolic(void *addr, unsigned nbytes, const char *name);
 uint8_t klee_int8(const char *name);
@@ -144,7 +145,7 @@ uint32_t HELPER(neon_tbl)(uint32_t ireg, uint32_t def,
 #define SHIFT 3
 #include "softmmu_template.h"
 
-#if defined(CONFIG_S2E) && !defined(S2E_LLVM_LIB)
+#if defined(CONFIG_S2E) 
 #undef MMUSUFFIX
 #define MMUSUFFIX _mmu_s2e_trace
 #define _raw _raw_s2e_trace
