@@ -441,6 +441,7 @@ target_phys_addr_t isa_mem_base = 0;
 PicState2 *isa_pic;
 
 /***********************************************************/
+#if 0
 void hw_error(const char *fmt, ...)
 {
     va_list ap;
@@ -461,7 +462,7 @@ void hw_error(const char *fmt, ...)
     va_end(ap);
     abort();
 }
-
+#endif
 
 static IOPortReadFunc default_ioport_readb, default_ioport_readw, default_ioport_readl;
 static IOPortWriteFunc default_ioport_writeb, default_ioport_writew, default_ioport_writel;

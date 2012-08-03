@@ -268,26 +268,6 @@ target_phys_addr_t isa_mem_base = 0;
 PicState2 *isa_pic;
 
 /***********************************************************/
-void hw_error(const char *fmt, ...)
-{
-    va_list ap;
-    CPUState *env;
-
-    va_start(ap, fmt);
-    fprintf(stderr, "qemu: hardware error: ");
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-    for(env = first_cpu; env != NULL; env = env->next_cpu) {
-        fprintf(stderr, "CPU #%d:\n", env->cpu_index);
-#ifdef TARGET_I386
-        cpu_dump_state(env, stderr, fprintf, X86_DUMP_FPU);
-#else
-        cpu_dump_state(env, stderr, fprintf, 0);
-#endif
-    }
-    va_end(ap);
-    abort();
-}
 
 
 static IOPortReadFunc default_ioport_readb, default_ioport_readw, default_ioport_readl;
