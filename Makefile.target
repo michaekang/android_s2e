@@ -189,6 +189,10 @@ LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/Plugin.cpp \
 		$(S2E_DIR)/S2EExecutor.cpp  \
 		$(S2E_DIR)/Plugins/CorePlugin.cpp \
+		$(S2E_DIR)/Plugins/ModuleExecutionDetector.cpp \
+		$(S2E_DIR)/Plugins/ExecutionTracers/TestCaseGenerator.cpp \
+		$(S2E_DIR)/Plugins/ExecutionTracers/ExecutionTracer.cpp \
+		$(S2E_DIR)/Signals/signals.cpp \
 		tcg/tcg-llvm.cpp
 
 LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `~/git/build_s2e/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
@@ -340,7 +344,6 @@ LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/Plugins/ExecutionTracers/TestCaseGenerator.cpp \
 		$(S2E_DIR)/Plugins/ExecutionTracers/ExecutionTracer.cpp \
 		$(S2E_DIR)/Signals/signals.cpp \
-		$(S2E_DIR)/x64.asm \
 		tcg/tcg-llvm.cpp
 
 LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `~/git/build_s2e/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
@@ -395,6 +398,7 @@ LOCAL_LDLIBS += \
     $(EMULATOR_LIBQEMU_LDLIBS) \
     $(EMULATOR_LIBUI_LDLIBS) \
     $(ELFF_LDLIBS) \
+	/home/ksh/git/build_s2e/stp/lib/libstp.a \
 
 LOCAL_CFLAGS += \
     $(EMULATOR_TARGET_CFLAGS) \
