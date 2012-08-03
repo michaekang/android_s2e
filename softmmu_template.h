@@ -101,8 +101,8 @@
 static DATA_TYPE glue(glue(slow_ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                         int mmu_idx,
                                                         void *retaddr);
-#ifndef CONFIG_S2E
-#if 1
+#ifndef S2E_LLVM_LIB
+#if 0
 static inline DATA_TYPE glue(io_read, SUFFIX)(target_phys_addr_t physaddr,
                                               target_ulong addr,
                                               void *retaddr)
@@ -603,8 +603,9 @@ static void glue(glue(slow_st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                    int mmu_idx,
                                                    void *retaddr);
 
-#ifndef CONFIG_S2E
-static inline void glue(io_write, SUFFIX)(target_phys_addr_t physaddr,
+#ifndef S2E_LLVM_LIB
+
+inline void glue(glue(io_write, SUFFIX), MMUSUFFIX)(target_phys_addr_t physaddr,
                                           DATA_TYPE val,
                                           target_ulong addr,
                                           void *retaddr)
@@ -618,7 +619,7 @@ static inline void glue(io_write, SUFFIX)(target_phys_addr_t physaddr,
     }
 
     env->mem_io_vaddr = addr;
-    env->mem_io_pc = (unsigned long)retaddr;
+    env->mem_io_pc = (uintptr_t)retaddr;
 #if SHIFT <= 2
     io_mem_write[index][SHIFT](io_mem_opaque[index], physaddr, val);
 #else
@@ -631,6 +632,16 @@ static inline void glue(io_write, SUFFIX)(target_phys_addr_t physaddr,
 #endif
 #endif /* SHIFT > 2 */
 }
+
+inline void glue(glue(io_write_chk, SUFFIX), MMUSUFFIX)(target_phys_addr_t physaddr,
+                                          DATA_TYPE val,
+                                          target_ulong addr,
+                                          void *retaddr)
+{
+    //XXX: check symbolic memory mapped devices and write log here.
+    glue(glue(io_write, SUFFIX), MMUSUFFIX)(physaddr, val, addr, retaddr);
+}
+
 #else
 /**
   * Only if compiling for LLVM.
