@@ -32,7 +32,7 @@ EMULATOR_COMMON_CFLAGS += -DANDROID_BUILD_ID="$(strip $(BUILD_ID))-$(strip $(BUI
 endif
 ifeq ($(BUILD_S2E),true)
 EMULATOR_COMMON_CFLAGS += -DCONFIG_S2E -DTARGET_ARM
-EMULATOR_COMMON_LDLIBS +=  -L/home/ksh/git/build_s2e/klee/Release/lib -lstp  -L/home/ksh/git/build_s2e/stp/lib -L/home/ksh/git/build_s2e/llvm/Release/lib -lkleeCore -lkleeModule -lkleaverSolver -lkleaverExpr -lkleeSupport -lkleeBasic -lsigc-2.0 -llua5.1 -lLLVMLinker -lLLVMipo -lLLVMInterpreter -lLLVMInstrumentation -lLLVMJIT -lLLVMExecutionEngine -lLLVMDebugger -lLLVMBitWriter -lLLVMX86AsmParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMX86Info -lLLVMAsmPrinter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMipa -lLLVMAsmParser -lLLVMArchive -lLLVMBitReader -lLLVMAnalysis -lLLVMTarget -lLLVMMC -lLLVMCore -lLLVMSupport -lLLVMSystem
+EMULATOR_COMMON_LDLIBS +=  -L/home/ksh/git/build_s2e/klee/Release/lib -lstp  -L/home/ksh/git/build_s2e/stp/lib -L/home/ksh/git/build_s2e/llvm/Release/lib -lkleeCore -lkleeModule -lkleaverSolver -lkleaverExpr -lkleeSupport -lkleeBasic -lsigc -llua5.1 -lLLVMLinker -lLLVMipo -lLLVMInterpreter -lLLVMInstrumentation -lLLVMJIT -lLLVMExecutionEngine -lLLVMDebugger -lLLVMBitWriter -lLLVMX86AsmParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMX86Info -lLLVMAsmPrinter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMipa -lLLVMAsmParser -lLLVMArchive -lLLVMBitReader -lLLVMAnalysis -lLLVMTarget -lLLVMMC -lLLVMCore -lLLVMSupport -lLLVMSystem
 
 endif
 
