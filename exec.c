@@ -395,13 +395,6 @@ static inline PhysPageDesc *phys_page_find(target_phys_addr_t index)
 {
     return phys_page_find_alloc(index, 0);
 }
-void* qemu_get_phys_ram_ptr(ram_addr_t paddr)
-{
-    PhysPageDesc *p = phys_page_find(paddr >> TARGET_PAGE_BITS);
-    if(!p)
-        return NULL;
-    return qemu_get_ram_ptr(p->phys_offset & TARGET_PAGE_MASK);
-}
 
 #if !defined(CONFIG_USER_ONLY)
 static void tlb_protect_code(ram_addr_t ram_addr);
@@ -2238,6 +2231,14 @@ int tlb_set_page_exec(CPUState *env, target_ulong vaddr,
 #endif
 
     return ret;
+}
+
+void* qemu_get_phys_ram_ptr(ram_addr_t paddr)
+{
+    PhysPageDesc *p = phys_page_find(paddr >> TARGET_PAGE_BITS);
+    if(!p)
+        return NULL;
+    return qemu_get_ram_ptr(p->phys_offset & TARGET_PAGE_MASK);
 }
 
 #else
