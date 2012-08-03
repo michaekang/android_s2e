@@ -30,7 +30,7 @@
 #include "disas.h"
 #include "tcg.h"
 #include "qemu-timer.h"
-#ifdef CONFIG_LLVM
+#if 1
 #include "tcg-llvm.h"
 #endif
 
