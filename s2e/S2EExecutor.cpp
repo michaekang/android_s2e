@@ -57,7 +57,10 @@ extern const uint8_t rclw_table[32];
 extern const uint8_t rclb_table[32];
 
 #ifdef TARGET_ARM
-uint64_t helper_do_interrupt(void);
+//uint64_t helper_do_interrupt(void);
+uint64_t helper_do_interrupt(void){
+	return 0;
+}
 #elif defined(TARGET_I386)
 uint64_t helper_do_interrupt(int intno, int is_int, int error_code,
                   target_ulong next_eip, int is_hw);
