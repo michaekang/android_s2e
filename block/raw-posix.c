@@ -120,6 +120,27 @@ typedef struct BDRVRawState {
     uint8_t* aligned_buf;
 } BDRVRawState;
 
+typedef int (*__hook_raw_read)(struct BlockDriverState *bs, int64_t sector_num,
+                    uint8_t *buf, int nb_sectors);
+int (*__hook_bdrv_read)(struct BlockDriverState *bs, int64_t sector_num,
+                  uint8_t *buf, int nb_sectors,
+                  int *fallback,
+                  __hook_raw_read fb);
+
+int (*__hook_bdrv_write)(struct BlockDriverState *bs, int64_t sector_num,
+                   const uint8_t *buf, int nb_sectors);
+
+struct BlockDriverAIOCB* (*__hook_bdrv_aio_read)(
+    struct BlockDriverState *bs, int64_t sector_num,
+   uint8_t *buf, int nb_sectors,
+   BlockDriverCompletionFunc *cb, void *opaque,
+   int *fallback, __hook_raw_read fb);
+
+struct BlockDriverAIOCB* (*__hook_bdrv_aio_write)(
+   BlockDriverState *bs, int64_t sector_num,
+   const uint8_t *buf, int nb_sectors,
+   BlockDriverCompletionFunc *cb, void *opaque);
+
 static int fd_open(BlockDriverState *bs);
 static int64_t raw_getlength(BlockDriverState *bs);
 
