@@ -288,10 +288,12 @@ LOCAL_LDLIBS += \
     $(EMULATOR_LIBQEMU_LDLIBS) \
     $(ELFF_LDLIBS) \
 	/home/ksh/git/build_s2e/stp/lib/libstp.a \
+	/home/ksh/git/build_s2e/klee/Release/lib/libkleeCore.a \
+
+    #exec.c	\
+    #target-arm/op_helper.c \
 
 LOCAL_SRC_FILES := \
-    exec.c	\
-    target-arm/op_helper.c \
     tcg/tcg.c	\
     cpus.c 	\
     audio/audio.c \
@@ -313,6 +315,7 @@ LOCAL_SRC_FILES := \
     android/protocol/ui-commands-proxy.c \
     android/protocol/core-commands-impl.c \
     android/protocol/core-commands-qemu.c \
+    android/utils/tempfile.c \
 
 ifeq ($(BUILD_S2E),true)
 KLEE_DIR := /home/ksh/git/s2e/klee/
@@ -332,6 +335,7 @@ LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/Plugin.cpp \
 		$(S2E_DIR)/S2EExecutor.cpp  \
 		$(S2E_DIR)/Plugins/CorePlugin.cpp \
+		$(S2E_DIR)/Plugins/ModuleExecutionDetector.cpp \
 		tcg/tcg-llvm.cpp
 
 LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `~/git/build_s2e/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
