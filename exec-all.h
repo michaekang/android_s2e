@@ -210,7 +210,8 @@ struct TranslationBlock {
 
     uint32_t icount;
 
-#ifdef CONFIG_LLVM
+//#ifdef CONFIG_LLVM
+#if 1
     /* pointer to LLVM translated code */
     struct TCGLLVMContext *tcg_llvm_context;
     struct Function *llvm_function;
