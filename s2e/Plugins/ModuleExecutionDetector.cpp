@@ -58,6 +58,7 @@
 extern "C" {
 #include "config.h"
 #include "qemu-common.h"
+#include "exec-all.h"
 #include "cpu.h"
 extern CPUState *env;
 }
