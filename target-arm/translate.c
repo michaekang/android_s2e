@@ -165,6 +165,23 @@ void arm_translate_init(void)
 #include "helper.h"
 }
 
+static int num_temps;
+
+/* Allocate a temporary variable.  */
+static TCGv_i32 new_tmp(void)
+{
+    num_temps++;
+    return tcg_temp_new_i32();
+}
+
+/* Release a temporary variable.  */
+static void dead_tmp(TCGv tmp)
+{
+    tcg_temp_free(tmp);
+    num_temps--;
+}
+
+
 static inline TCGv load_cpu_offset(int offset)
 {
     TCGv tmp = tcg_temp_new_i32();
