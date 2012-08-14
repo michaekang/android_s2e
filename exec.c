@@ -2982,7 +2982,7 @@ static void notdirty_mem_writeb(void *opaque, target_phys_addr_t ram_addr,
 	#endif
 #endif
     }
-    stb_p(qemu_get_ram_ptr(ram_addr), val);
+    stb_raw(qemu_get_ram_ptr(ram_addr), val);
     dirty_flags |= (0xff & ~CODE_DIRTY_FLAG);
 
 #ifdef CONFIG_S2E
@@ -3014,7 +3014,7 @@ static void notdirty_mem_writew(void *opaque, target_phys_addr_t ram_addr,
         dirty_flags = cpu_physical_memory_get_dirty_flags(ram_addr);
 #endif
     }
-    stw_p(qemu_get_ram_ptr(ram_addr), val);
+    stw_raw(qemu_get_ram_ptr(ram_addr), val);
     dirty_flags |= (0xff & ~CODE_DIRTY_FLAG);
     cpu_physical_memory_set_dirty_flags(ram_addr, dirty_flags);
     /* we remove the notdirty callback only if the code has been
@@ -3044,7 +3044,7 @@ static void notdirty_mem_writel(void *opaque, target_phys_addr_t ram_addr,
         #endif
 #endif
     }
-    stl_p(qemu_get_ram_ptr(ram_addr), val);
+    stl_raw(qemu_get_ram_ptr(ram_addr), val);
     dirty_flags |= (0xff & ~CODE_DIRTY_FLAG);
     #ifdef CONFIG_S2E
         s2e_write_dirty_mask((uint64_t)&(ram_list.phys_dirty)[ram_addr >> TARGET_PAGE_BITS], dirty_flags);
@@ -3872,7 +3872,7 @@ uint32_t ldl_phys(target_phys_addr_t addr)
         /* RAM case */
         ptr = qemu_get_ram_ptr(pd & TARGET_PAGE_MASK) +
             (addr & ~TARGET_PAGE_MASK);
-        val = ldl_p(ptr);
+        val = ldl_raw(ptr);
     }
     return val;
 }
@@ -3910,7 +3910,7 @@ uint64_t ldq_phys(target_phys_addr_t addr)
         /* RAM case */
         ptr = qemu_get_ram_ptr(pd & TARGET_PAGE_MASK) +
             (addr & ~TARGET_PAGE_MASK);
-        val = ldq_p(ptr);
+        val = ldq_raw(ptr);
     }
     return val;
 }
@@ -4005,7 +4005,7 @@ void stq_phys_notdirty(target_phys_addr_t addr, uint64_t val)
     } else {
         ptr = qemu_get_ram_ptr(pd & TARGET_PAGE_MASK) +
             (addr & ~TARGET_PAGE_MASK);
-        stq_p(ptr, val);
+        stq_raw(ptr, val);
     }
 }
 
@@ -4034,7 +4034,7 @@ void stl_phys(target_phys_addr_t addr, uint32_t val)
         addr1 = (pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
         /* RAM case */
         ptr = qemu_get_ram_ptr(addr1);
-        stl_p(ptr, val);
+        stl_raw(ptr, val);
         if (!cpu_physical_memory_is_dirty(addr1)) {
             /* invalidate code */
             tb_invalidate_phys_page_range(addr1, addr1 + 4, 0);
