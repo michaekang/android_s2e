@@ -2267,6 +2267,7 @@ qemu_find_file_with_subdir(const char* data_dir, const char* subdir, const char*
 
     snprintf(buf, len, "%s/%s%s", data_dir, subdir, name);
     VERBOSE_PRINT(init,"    trying to find: %s\n", buf);
+	printf("trying to find: %s\n", buf);
     if (access(buf, R_OK)) {
         qemu_free(buf);
         return NULL;
@@ -2285,6 +2286,11 @@ char *qemu_find_file(int type, const char *name)
         return strdup(name);
     }
     switch (type) {
+    case QEMU_FILE_TYPE_LIB:
+        /* XXX: Terrible hack. Redo it after deadline! */
+        subdir="";
+        break;
+
     case QEMU_FILE_TYPE_BIOS:
         subdir = "";
         break;
@@ -4282,8 +4288,8 @@ int main(int argc, char **argv, char **envp)
 #ifdef CONFIG_S2E
     s2e_on_device_registration(g_s2e);
 #if defined(TARGET_I386)
-    void fake_register_devices(fake_pci_t *fake);
-    fake_register_devices(&g_fake_pci);
+    //void fake_register_devices(fake_pci_t *fake);
+    //fake_register_devices(&g_fake_pci);
 #endif
 #endif
 
