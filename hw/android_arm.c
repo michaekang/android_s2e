@@ -28,6 +28,10 @@
 
 #include "android/utils/debug.h"
 
+#ifdef CONFIG_S2E
+#include <s2e/s2e_qemu.h>
+#endif
+
 #define  D(...)  VERBOSE_PRINT(init,__VA_ARGS__)
 
 #define ARM_CPU_SAVE_VERSION  1
@@ -77,10 +81,25 @@ static void android_arm_init_(ram_addr_t ram_size,
         cpu_model = "arm926";
 
     env = cpu_init(cpu_model);
+
+#ifdef CONFIG_S2E
+        s2e_register_cpu(g_s2e, g_s2e_state, env);
+#endif
+
     register_savevm( "cpu", 0, ARM_CPU_SAVE_VERSION, cpu_save, cpu_load, env );
 
     ram_offset = qemu_ram_alloc(NULL,"android_arm",ram_size);
     cpu_register_physical_memory(0, ram_size, ram_offset | IO_MEM_RAM);
+
+#ifdef CONFIG_S2E
+    s2e_register_ram(g_s2e, g_s2e_state,
+                  0, ram_size,
+                  (uint64_t) qemu_get_ram_ptr(ram_offset | IO_MEM_RAM), 0, 0, "ram");
+//    s2e_register_ram(g_s2e, g_s2e_state,
+//                        0x80000000, ram_size,
+//                        (uint64_t) qemu_get_ram_ptr(ram_offset | IO_MEM_RAM), 0,0, "ramhigh");
+#endif
+
 
     cpu_pic = arm_pic_init_cpu(env);
     goldfish_pic = goldfish_interrupt_init(0xff000000, cpu_pic[ARM_PIC_CPU_IRQ], cpu_pic[ARM_PIC_CPU_FIQ]);
