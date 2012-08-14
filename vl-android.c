@@ -3624,7 +3624,7 @@ int main(int argc, char **argv, char **envp)
             }
         }
     }
-
+	s2e_verbose = 1;
     /* Initialize character map. */
     if (android_charmap_setup(op_charmap_file)) {
         if (op_charmap_file) {
