@@ -3956,7 +3956,8 @@ void stl_phys_notdirty(target_phys_addr_t addr, uint32_t val)
     } else {
         unsigned long addr1 = (pd & TARGET_PAGE_MASK) + (addr & ~TARGET_PAGE_MASK);
         ptr = qemu_get_ram_ptr(addr1);
-        stl_p(ptr, val);
+        //stl_p(ptr, val);
+        stl_raw(ptr, val);
 
         if (unlikely(in_migration)) {
             if (!cpu_physical_memory_is_dirty(addr1)) {
