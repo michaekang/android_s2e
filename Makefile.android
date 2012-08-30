@@ -128,7 +128,7 @@ MY_CFLAGS += -Wall -Wno-missing-field-initializers
 
 # Needed to build fpu/softfloat-native.h properly
 MY_CFLAGS += -D_GNU_SOURCE=1
-ifeq ($(BUILD_S2E),)
+ifeq ($(BUILD_S2E), true)
 MY_CFLAGS += -DCONFIG_S2E
 endif
 
