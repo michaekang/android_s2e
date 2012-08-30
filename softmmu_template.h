@@ -102,7 +102,7 @@ static DATA_TYPE glue(glue(slow_ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                         int mmu_idx,
                                                         void *retaddr);
 #ifndef S2E_LLVM_LIB
-#if 0
+#ifndef CONFIG_S2E
 static inline DATA_TYPE glue(io_read, SUFFIX)(target_phys_addr_t physaddr,
                                               target_ulong addr,
                                               void *retaddr)
@@ -604,6 +604,35 @@ static void glue(glue(slow_st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                    void *retaddr);
 
 #ifndef S2E_LLVM_LIB
+#ifndef CONFIG_S2E
+static inline void glue(io_write, SUFFIX)(target_phys_addr_t physaddr,
+                                          DATA_TYPE val,
+                                          target_ulong addr,
+                                          void *retaddr)
+{
+    int index;
+    index = (physaddr >> IO_MEM_SHIFT) & (IO_MEM_NB_ENTRIES - 1);
+    physaddr = (physaddr & TARGET_PAGE_MASK) + addr;
+    if (index > (IO_MEM_NOTDIRTY >> IO_MEM_SHIFT)
+            && !can_do_io(env)) {
+        cpu_io_recompile(env, retaddr);
+    }
+
+    env->mem_io_vaddr = addr;
+    env->mem_io_pc = (unsigned long)retaddr;
+#if SHIFT <= 2
+    io_mem_write[index][SHIFT](io_mem_opaque[index], physaddr, val);
+#else
+#ifdef TARGET_WORDS_BIGENDIAN
+    io_mem_write[index][2](io_mem_opaque[index], physaddr, val >> 32);
+    io_mem_write[index][2](io_mem_opaque[index], physaddr + 4, val);
+#else
+    io_mem_write[index][2](io_mem_opaque[index], physaddr, val);
+    io_mem_write[index][2](io_mem_opaque[index], physaddr + 4, val >> 32);
+#endif
+#endif /* SHIFT > 2 */
+}
+#endif
 
 inline void glue(glue(io_write, SUFFIX), MMUSUFFIX)(target_phys_addr_t physaddr,
                                           DATA_TYPE val,
