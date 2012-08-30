@@ -244,6 +244,28 @@ static void cpu_handle_debug_exception(CPUState *env)
 
 volatile sig_atomic_t exit_request;
 
+#ifndef CONFIG_S2E
+const char* diff_log_filename = "./plain_insn.log";
+#else
+const char* diff_log_filename = "./s2e_insn.log";
+#endif
+FILE* diff_log_fd = NULL;
+unsigned long block_icount = 0;
+unsigned long diff_start = 0;
+unsigned long diff_end = 100000;
+void diff_block(CPUState* env){
+	block_icount++;
+	if(diff_log_fd != NULL){
+	if(block_icount > diff_start && block_icount <= diff_end){
+		fprintf(diff_log_fd, "block_icount=%d, pc=0x%x\n", block_icount, env->regs[15]);
+		int i = 0;
+		for(; i < 15; i++)
+			fprintf(diff_log_fd, "r[%d]=0x%x\t", i, env->regs[i]);
+			fprintf(diff_log_fd, "\n----------\n");
+			fflush(diff_log_fd);
+		}
+	}
+}
 int cpu_exec(CPUState *env1)
 {
 //#ifdef CONFIG_S2E
@@ -254,6 +276,14 @@ int cpu_exec(CPUState *env1)
     uint8_t *tc_ptr;
     unsigned long next_tb;
     unsigned intNb=-1;
+
+	if(diff_log_fd == NULL){
+		diff_log_fd = fopen(diff_log_filename, "w+");
+		if(diff_log_fd == NULL){
+			fprintf(stderr, "can not open log file %s\n", diff_log_filename);
+			exit(-1);
+		}
+	}
 
     if (env1->halted) {
         if (!cpu_has_work(env1)) {
@@ -697,6 +727,7 @@ int cpu_exec(CPUState *env1)
 #else
                     next_tb = tcg_qemu_tb_exec(tc_ptr);
 #endif
+			diff_block(env);
 
                     if ((next_tb & 3) == 2) {
                         /* Instruction counter expired.  */
