@@ -12,6 +12,9 @@ ifeq ($(EMULATOR_TARGET_CPU),x86)
   EMULATOR_TARGET_CPU := i386
 endif
 
+BUILD_S2E_PATH = /opt/source/s2e/build_s2e/
+S2E_PATH = /opt/source/s2e/s2e/
+
 ##############################################################################
 ##############################################################################
 ###
@@ -31,7 +34,8 @@ EMULATOR_TARGET_CFLAGS := \
 
 ifeq ($(BUILD_S2E),true)
 EMULATOR_TARGET_CFLAGS += -DCONFIG_S2E -DCONFIG_LLVM 
-EMULATOR_TARGET_LDLIBS +=  `pkg-config lua5.1 --libs` `pkg-config sigc++-2.0 --libs` -L/home/ksh/git/build_s2e/klee/Release/lib `/home/ksh/git/build_s2e/klee/Release/bin/klee-config --libs` -lstp  -L/home/ksh/git/build_s2e/stp/lib -L/home/ksh/git/build_s2e/llvm/Release/lib `~/git/build_s2e/llvm/Release/bin/llvm-config --libs`
+
+EMULATOR_TARGET_LDLIBS +=  `pkg-config lua5.1 --libs` `pkg-config sigc++-2.0 --libs` -L$(BUILD_S2E_PATH)/klee/Release/lib `$(BUILD_S2E_PATH)/klee/Release/bin/klee-config --libs` -lstp  -L$(BUILD_S2E_PATH)/stp/lib -L$(BUILD_S2E_PATH)/llvm/Release/lib `$(BUILD_S2E_PATH)/llvm/Release/bin/llvm-config --libs`
 
 endif
 
@@ -172,9 +176,8 @@ LOCAL_SRC_FILES += \
     arm-semi.c \
 
 ifeq ($(BUILD_S2E),true)
-KLEE_DIR := /home/ksh/git/s2e/klee/
-BUILD_S2E_DIR := /home/ksh/git/build_s2e/
-BUILD_KLEE_DIR := /home/ksh/git/build_s2e/klee/
+KLEE_DIR := $(S2E_PATH)/klee/
+BUILD_KLEE_DIR := $(BUILD_S2E_PATH)/klee/
 S2E_DIR := s2e/
 LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/ConfigFile.cpp \
@@ -195,7 +198,7 @@ LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/Signals/signals.cpp \
 		tcg/tcg-llvm.cpp
 
-LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `~/git/build_s2e/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
+LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `$(BUILD_S2E_PATH)/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
 endif
 
 LOCAL_SRC_FILES += fpu/softfloat.c
@@ -291,8 +294,8 @@ LOCAL_LDLIBS += \
     $(EMULATOR_COMMON_LDLIBS) \
     $(EMULATOR_LIBQEMU_LDLIBS) \
     $(ELFF_LDLIBS) \
-	/home/ksh/git/build_s2e/stp/lib/libstp.a \
-	/home/ksh/git/build_s2e/klee/Release/lib/libkleeCore.a \
+	$(BUILD_S2E_PATH)/stp/lib/libstp.a \
+	$(BUILD_S2E_PATH)/klee/Release/lib/libkleeCore.a \
 
     #exec.c	\
     #target-arm/op_helper.c \
@@ -323,9 +326,9 @@ LOCAL_SRC_FILES := \
     android/utils/mapfile.c \
 
 ifeq ($(BUILD_S2E),true)
-KLEE_DIR := /home/ksh/git/s2e/klee/
-BUILD_S2E_DIR := /home/ksh/git/build_s2e/
-BUILD_KLEE_DIR := /home/ksh/git/build_s2e/klee/
+KLEE_DIR := $(S2E_PATH)/klee/
+BUILD_S2E_DIR := $(BUILD_S2E_PATH)
+BUILD_KLEE_DIR := $(BUILD_S2E_PATH)/klee/
 S2E_DIR := s2e/
 LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/ConfigFile.cpp \
@@ -346,7 +349,7 @@ LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/Signals/signals.cpp \
 		tcg/tcg-llvm.cpp
 
-LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `~/git/build_s2e/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
+LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `$(BUILD_S2E_PATH)/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
 endif
 
 $(call gen-hx-header,qemu-monitor.hx,qemu-monitor.h,monitor.c)
@@ -398,7 +401,7 @@ LOCAL_LDLIBS += \
     $(EMULATOR_LIBQEMU_LDLIBS) \
     $(EMULATOR_LIBUI_LDLIBS) \
     $(ELFF_LDLIBS) \
-	/home/ksh/git/build_s2e/stp/lib/libstp.a \
+	$(BUILD_S2E_PATH)/stp/lib/libstp.a \
 
 LOCAL_CFLAGS += \
     $(EMULATOR_TARGET_CFLAGS) \

@@ -32,7 +32,8 @@ EMULATOR_COMMON_CFLAGS += -DANDROID_BUILD_ID="$(strip $(BUILD_ID))-$(strip $(BUI
 endif
 ifeq ($(BUILD_S2E),true)
 EMULATOR_COMMON_CFLAGS += -DCONFIG_S2E -DTARGET_ARM
-EMULATOR_COMMON_LDLIBS +=  -L/home/ksh/git/build_s2e/klee/Release/lib -lstp  -L/home/ksh/git/build_s2e/stp/lib -L/home/ksh/git/build_s2e/llvm/Release/lib -lkleeCore -lkleeModule -lkleaverSolver -lkleaverExpr -lkleeSupport -lkleeBasic -lsigc -llua5.1 -lLLVMLinker -lLLVMipo -lLLVMInterpreter -lLLVMInstrumentation -lLLVMJIT -lLLVMExecutionEngine -lLLVMDebugger -lLLVMBitWriter -lLLVMX86AsmParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMX86Info -lLLVMAsmPrinter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMipa -lLLVMAsmParser -lLLVMArchive -lLLVMBitReader -lLLVMAnalysis -lLLVMTarget -lLLVMMC -lLLVMCore -lLLVMSupport -lLLVMSystem
+BUILD_S2E_PATH = /opt/source/s2e/build_s2e/
+EMULATOR_COMMON_LDLIBS +=  -L$(BUILD_S2E_PATH)/klee/Release/lib -lstp  -L$(BUILD_S2E_PATH)/stp/lib -L$(BUILD_S2E_PATH)/llvm/Release/lib -lkleeCore -lkleeModule -lkleaverSolver -lkleaverExpr -lkleeSupport -lkleeBasic -llua5.1 -lLLVMLinker -lLLVMipo -lLLVMInterpreter -lLLVMInstrumentation -lLLVMJIT -lLLVMExecutionEngine -lLLVMDebugger -lLLVMBitWriter -lLLVMX86AsmParser -lLLVMX86AsmPrinter -lLLVMX86CodeGen -lLLVMSelectionDAG -lLLVMX86Info -lLLVMAsmPrinter -lLLVMCodeGen -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMipa -lLLVMAsmParser -lLLVMArchive -lLLVMBitReader -lLLVMAnalysis -lLLVMTarget -lLLVMMC -lLLVMCore -lLLVMSupport -lLLVMSystem
 
 endif
 
@@ -191,7 +192,7 @@ else # BUILD_SDL_FROM_SOURCES
 endif # BUILD_SDL_FROM_SOURCES
 
 EMULATOR_LIBUI_CFLAGS += $(SDL_CFLAGS)
-EMULATOR_LIBUI_LDLIBS += $(SDL_LDLIBS) -liconv
+EMULATOR_LIBUI_LDLIBS += $(SDL_LDLIBS) 
 
 # The following is needed by SDL_LoadObject
 ifneq ($(HOST_OS),windows)
