@@ -819,10 +819,14 @@ static void do_interrupt_v7m(CPUARMState *env)
     env->regs[15] = addr & 0xfffffffe;
     env->thumb = addr & 1;
 }
-
+#if defined(CONFIG_S2E)
+extern CPUARMState *env;
+void helper_do_interrupt(void){
+#else
 /* Handle a CPU exception.  */
 void do_interrupt(CPUARMState *env)
 {
+#endif
     uint32_t addr;
     uint32_t mask;
     int new_mode;
@@ -1281,7 +1285,7 @@ static int get_phys_addr_mpu(CPUState *env, uint32_t address, int access_type,
     *prot |= PAGE_EXEC;
     return 0;
 }
-
+#if 0
 #ifdef CONFIG_GLES2
 int get_phys_addr(CPUState *env, uint32_t address,
                   int access_type, int is_user,
@@ -1289,6 +1293,7 @@ int get_phys_addr(CPUState *env, uint32_t address,
                   target_ulong *page_size);
 #else
 static
+#endif
 #endif
 int get_phys_addr(CPUState *env, uint32_t address,
                                 int access_type, int is_user,
