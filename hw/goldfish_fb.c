@@ -16,6 +16,10 @@
 #include "goldfish_device.h"
 #include "console.h"
 
+#ifdef CONFIG_S2E
+#include "s2e/s2e_qemu.h"
+#endif
+
 /* These values *must* match the platform definitions found under
  * hardware/libhardware/include/hardware/hardware.h
  */
@@ -314,7 +318,12 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
         switch (fbs->bytes_per_pixel) {
         case 2:
         {
+#ifndef CONFIG_S2E
             const uint16_t* src = (const uint16_t*) src_line;
+#else
+	    const uint16_t* src; 
+	    src = s2e_get_address((uint64_t)src_line);
+#endif 
             uint16_t*       dst = (uint16_t*) dst_line;
 
             xx1 = 0;
@@ -341,13 +350,50 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
                 xx++;
             });
 #else
+	    printf("case 2:src %p,xx1 0x%x,size 0x%x\n",src,xx1,(xx2 -xx1 + 1)*2);
+#ifndef CONFIG_S2E
             memcpy( dst+xx1, src+xx1, (xx2-xx1+1)*2 );
+#else 
+	    int copy_size = (xx2 -xx1 + 1) * 2;
+	    uint64_t start = (uint64_t)src_line + 2 * xx1;
+	    uint64_t host;
+	    int end = 0;
+	    dst +=  xx1;
+	    
+	    int count = copy_size / S2E_RAM_OBJECT_SIZE;
+	    count ++;
+            if(start & (S2E_RAM_OBJECT_SIZE -1 ))
+		count --;
+	    if((start + copy_size) & (S2E_RAM_OBJECT_SIZE -1)){
+	        end = ((start + copy_size) & (S2E_RAM_OBJECT_SIZE -1)) + 1;
+		count--;
+             }
+            if(start & (S2E_RAM_OBJECT_SIZE -1 )){	
+	        host = s2e_get_address(start);
+		memcpy(dst, (uint8_t *)host, (S2E_RAM_OBJECT_SIZE - (start& (S2E_RAM_OBJECT_SIZE - 1))));
+            }
+	    int it;
+	    dst += ((S2E_RAM_OBJECT_SIZE - (start& (S2E_RAM_OBJECT_SIZE - 1))) >> 1);
+	    start += (S2E_RAM_OBJECT_SIZE - (start& (S2E_RAM_OBJECT_SIZE - 1)));
+	    for(it = 0; it < count; it++){
+	        host = s2e_get_address(start);
+		memcpy(dst,(uint8_t *)host,S2E_RAM_OBJECT_SIZE);
+		dst += ((S2E_RAM_OBJECT_SIZE ) >> 1);
+		start+= S2E_RAM_OBJECT_SIZE;
+	    }
+	    host = s2e_get_address(start);
+	    if(end)
+		memcpy(dst,(uint8_t *)host,end);
+#endif
 #endif
             break;
         }
 
         case 3:
         {
+#ifdef CONFIG_S2E
+	    src_line = s2e_get_address((uint64_t)src_line);
+#endif
             xx1 = 0;
             DUFF4(width, {
                 int xx = xx1*3;
@@ -371,13 +417,19 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
                 }
                 xx2--;
             });
+	    printf("case 3:src %p,xx1 0x%x,size 0x%x\n",src_line,xx1,(xx2 -xx1 + 1)*3);
             memcpy( dst_line+xx1*3, src_line+xx1*3, (xx2-xx1+1)*3 );
             break;
         }
 
         case 4:
         {
+#ifndef CONFIG_S2E 
             const uint32_t* src = (const uint32_t*) src_line;
+#else 
+	    const uint32_t *src;
+	    src = s2e_get_address((uint64_t)src_line);
+#endif 
             uint32_t*       dst = (uint32_t*) dst_line;
 
             xx1 = 0;
@@ -408,6 +460,7 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
                 xx++;
             })
 #else
+	    printf("case 4:src %p,xx1 0x%x,size 0x%x\n",src,xx1,(xx2 -xx1 + 1)*4);
             memcpy( dst+xx1, src+xx1, (xx2-xx1+1)*4 );
 #endif
             break;
