@@ -1816,6 +1816,23 @@ void S2EExecutionState::dmaWrite(uint64_t hostAddress, uint8_t *buf, unsigned si
     }
 }
 
+uint64_t S2EExecutionState::getAddress(uint64_t hostAddress)
+{
+	uint64_t hostPage = hostAddress & S2E_RAM_OBJECT_MASK;
+	ObjectPair op = m_memcache.get(hostPage);
+        if (!op.first) {
+            op = addressSpace.findObject(hostPage);
+            m_memcache.put(hostAddress, op);
+        }
+
+        assert(op.first && op.second && op.first->address == hostPage);
+        ObjectState *os = addressSpace.getWriteable(op.first, op.second);
+        uint8_t *concreteStore = os->getConcreteStore(true);
+
+        unsigned offset = hostAddress & (S2E_RAM_OBJECT_SIZE-1);
+	return ((uint64_t)concreteStore + offset);
+}
+
 #ifdef TARGET_ARM
 void S2EExecutionState::updateTlbEntry(CPUARMState* env,
                           int mmu_idx, uint64_t virtAddr, uint64_t hostAddr)
