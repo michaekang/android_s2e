@@ -364,6 +364,7 @@ public:
     /** Fast routines used by the DMA subsystem */
     void dmaRead(uint64_t hostAddress, uint8_t *buf, unsigned size);
     void dmaWrite(uint64_t hostAddress, uint8_t *buf, unsigned size);
+    uint64_t getAddress(uint64_t hostAddress);
 
     /** Dirty mask management */
     uint8_t readDirtyMask(uint64_t host_address);
