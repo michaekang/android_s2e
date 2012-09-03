@@ -2569,6 +2569,11 @@ void s2e_dma_write(uint64_t hostAddress, uint8_t *buf, unsigned size)
 {
     return g_s2e_state->dmaWrite(hostAddress, buf, size);
 }
+//add to get s2e address space
+uint64_t s2e_get_address(uint64_t hostAddress)
+{
+	return g_s2e_state->getAddress(hostAddress);
+}
 
 void s2e_tb_alloc(S2E*, TranslationBlock *tb)
 {
