@@ -251,19 +251,41 @@ const char* diff_log_filename = "./s2e_insn.log";
 #endif
 FILE* diff_log_fd = NULL;
 unsigned long block_icount = 0;
-unsigned long diff_start = 0;
-unsigned long diff_end = 100000;
+unsigned long diff_num = 10000;
+unsigned long diff_start = 1000000;
+unsigned long diff_end =   2000000;
+int log_enabled = 0;
 void diff_block(CPUState* env){
 	block_icount++;
 	if(diff_log_fd != NULL){
-	if(block_icount > diff_start && block_icount <= diff_end){
-		fprintf(diff_log_fd, "block_icount=%d, pc=0x%x\n", block_icount, env->regs[15]);
-		int i = 0;
-		for(; i < 15; i++)
-			fprintf(diff_log_fd, "r[%d]=0x%x\t", i, env->regs[i]);
+	#if 0
+		if(block_icount > diff_start && block_icount <= diff_end){
+			fprintf(diff_log_fd, "block_icount=%d, pc=0x%x\n", block_icount, env->regs[15]);
+			int i = 0;
+			for(; i < 15; i++)
+				fprintf(diff_log_fd, "r[%d]=0x%x\t", i, env->regs[i]);
 			fprintf(diff_log_fd, "\n----------\n");
 			fflush(diff_log_fd);
 		}
+		if(env->regs[15] < 0xc0000000 && (block_icount > 0)){
+			diff_num --;
+			fprintf(diff_log_fd, "block_icount=%d, pc=0x%x\n", block_icount, env->regs[15]);
+			int i = 0;
+			for(; i < 15; i++)
+				fprintf(diff_log_fd, "r[%d]=0x%x\t", i, env->regs[i]);
+			fprintf(diff_log_fd, "\n----------\n");
+			fflush(diff_log_fd);
+
+		}
+	#endif
+	}
+	static unsigned long trigger_pc = 0x16104;
+	if(env->regs[15] == trigger_pc)
+		log_enabled = 0;
+	if(log_enabled){
+		printf("block_icount=%d, pc=0x%x\n", block_icount, env->regs[15]);
+		if(--diff_num == 0)
+			log_enabled = 0;
 	}
 }
 int cpu_exec(CPUState *env1)
@@ -900,6 +922,7 @@ static inline int handle_cpu_signal(unsigned long pc, unsigned long address,
     }
 
     /* see if it is an MMU fault */
+	printf("In %s, before cpu_handle_mmu_fault, address=0x%x, is_write=%d\n", __FUNCTION__, address, is_write);
     ret = cpu_handle_mmu_fault(env, address, is_write, MMU_USER_IDX, 0);
     if (ret < 0)
         return 0; /* not an MMU fault */
