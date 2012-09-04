@@ -566,7 +566,7 @@ static int qemu_cpu_exec(CPUState *env)
 #endif
     if (use_icount) {
 #ifdef CONFIG_S2E
-        assert(qemu_icount == env->s2e_icount);
+        //assert(qemu_icount == env->s2e_icount);
 #endif
 
         int64_t count;
@@ -604,7 +604,7 @@ static int qemu_cpu_exec(CPUState *env)
         env->icount_decr.u32 = 0;
         env->icount_extra = 0;
 #ifdef CONFIG_S2E
-        assert(qemu_icount == env->s2e_icount);
+        //assert(qemu_icount == env->s2e_icount);
 #endif
 
     }

@@ -208,10 +208,10 @@ void cpu_restore_icount(CPUState *env)
             env->s2e_icount_after_tb = env->s2e_icount;
             env->s2e_icount_before_tb = env->s2e_icount;
         } else {
-            assert(env->s2e_icount == env->s2e_icount_after_tb);
+            //assert(env->s2e_icount == env->s2e_icount_after_tb);
         }
-        assert(env->s2e_icount == qemu_icount - env->icount_decr.u16.low
-                                             - env->icount_extra);
+        //assert(env->s2e_icount == qemu_icount - env->icount_decr.u16.low
+          //                                   - env->icount_extra);
     }
 }
 #endif
