@@ -98,12 +98,12 @@ typedef struct CPUTLBEntry {
     target_ulong addr_code;
     /* Addend to virtual address to get host address.  IO accesses
        use the corresponding iotlb value.  */
-    size_t addend;
+    uintptr_t addend __attribute__((aligned(8)));
     /* padding to get a power of two size */
     uint8_t dummy[(1 << CPU_TLB_ENTRY_BITS) -
                   (sizeof(target_ulong) * 3 +
-                   ((-sizeof(target_ulong) * 3) & (sizeof(size_t) - 1)) +
-                   sizeof(size_t))];
+                   ((-sizeof(target_ulong) * 3) & (sizeof(uintptr_t) - 1)) +
+                   sizeof(uintptr_t))];
 } CPUTLBEntry;
 
 #if defined(CONFIG_S2E) && defined(S2E_ENABLE_S2E_TLB)
