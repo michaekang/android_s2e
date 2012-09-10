@@ -55,6 +55,7 @@ EMULATOR_TARGET_CFLAGS += \
 
 $(call start-emulator-library, emulator-target-$(EMULATOR_TARGET_CPU))
 
+#$(call start-emulator-program, qemu-android-$(EMULATOR_TARGET_ARCH))
 # The following is to ensure that "config.h" will map to a target-specific
 # configuration file header.
 LOCAL_CFLAGS += $(EMULATOR_TARGET_CFLAGS)
@@ -192,7 +193,12 @@ LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
 		$(S2E_DIR)/Plugin.cpp \
 		$(S2E_DIR)/S2EExecutor.cpp  \
 		$(S2E_DIR)/Plugins/CorePlugin.cpp \
+		$(S2E_DIR)/Plugins/Example.cpp \
+		$(S2E_DIR)/Plugins/StateManager.cpp \
+		$(S2E_DIR)/Plugins/EdgeKiller.cpp \
 		$(S2E_DIR)/Plugins/ModuleExecutionDetector.cpp \
+		$(S2E_DIR)/Plugins/RawMonitor.cpp \
+		$(S2E_DIR)/Plugins/Debugger.cpp \
 		$(S2E_DIR)/Plugins/ExecutionTracers/TestCaseGenerator.cpp \
 		$(S2E_DIR)/Plugins/ExecutionTracers/ExecutionTracer.cpp \
 		$(S2E_DIR)/Signals/signals.cpp \
@@ -268,7 +274,6 @@ $(call end-emulator-library)
 ###
 ###
 $(call start-emulator-program, qemu-android-$(EMULATOR_TARGET_ARCH))
-
 LOCAL_CFLAGS += \
     $(EMULATOR_COMMON_CFLAGS) \
     $(ELFF_CFLAGS) \
@@ -325,32 +330,7 @@ LOCAL_SRC_FILES := \
     android/utils/tempfile.c \
     android/utils/mapfile.c \
 
-ifeq ($(BUILD_S2E),true)
-KLEE_DIR := $(S2E_PATH)/klee/
-BUILD_S2E_DIR := $(BUILD_S2E_PATH)
-BUILD_KLEE_DIR := $(BUILD_S2E_PATH)/klee/
-S2E_DIR := s2e/
-LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
-		$(S2E_DIR)/ConfigFile.cpp \
-		$(S2E_DIR)/Database.cpp \
-		$(S2E_DIR)/S2E.cpp \
-		$(S2E_DIR)/S2EDeviceState.cpp \
-		$(S2E_DIR)/S2EExecutionState.cpp \
-		$(S2E_DIR)/S2EStatsTracker.cpp \
-		$(S2E_DIR)/SelectRemovalPass.cpp \
-		$(S2E_DIR)/Slab.cpp \
-		$(S2E_DIR)/Synchronization.cpp \
-		$(S2E_DIR)/Plugin.cpp \
-		$(S2E_DIR)/S2EExecutor.cpp  \
-		$(S2E_DIR)/Plugins/CorePlugin.cpp \
-		$(S2E_DIR)/Plugins/ModuleExecutionDetector.cpp \
-		$(S2E_DIR)/Plugins/ExecutionTracers/TestCaseGenerator.cpp \
-		$(S2E_DIR)/Plugins/ExecutionTracers/ExecutionTracer.cpp \
-		$(S2E_DIR)/Signals/signals.cpp \
-		tcg/tcg-llvm.cpp
 
-LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `$(BUILD_S2E_PATH)/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
-endif
 
 $(call gen-hx-header,qemu-monitor.hx,qemu-monitor.h,monitor.c)
 $(call gen-hx-header,qemu-options.hx,qemu-options.def,vl-android.c qemu-options.h)
@@ -431,6 +411,18 @@ LOCAL_SRC_FILES := \
     android/protocol/core-commands-qemu.c \
     android/protocol/ui-commands-qemu.c \
     android/
+ifeq ($(BUILD_S2E),true)
+KLEE_DIR := $(S2E_PATH)/klee/
+BUILD_KLEE_DIR := $(BUILD_S2E_PATH)/klee/
+S2E_DIR := s2e/
+LOCAL_SRC_FILES += $(S2E_DIR)/sqlite3.c \
+		$(S2E_DIR)/Plugins/Example.cpp \
+		$(S2E_DIR)/Plugins/StateManager.cpp \
+		$(S2E_DIR)/Plugins/EdgeKiller.cpp \
+		$(S2E_DIR)/Plugins/BaseInstructionsArm.cpp \
+		
+LOCAL_CFLAGS += -I$(KLEE_DIR)/include/ -I$(BUILD_KLEE_DIR)/include/ `$(BUILD_S2E_PATH)/llvm/Release/bin/llvm-config --cxxflags` `pkg-config lua5.1 --cflags` -fno-inline `pkg-config sigc++-2.0 --cflags`
+endif
 
 $(call gen-hx-header,qemu-monitor.hx,qemu-monitor.h,monitor.c)
 $(call gen-hx-header,qemu-options.hx,qemu-options.def,vl-android.c qemu-options.h)
