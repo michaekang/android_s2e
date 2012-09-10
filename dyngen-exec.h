@@ -81,4 +81,31 @@ typedef void * host_reg_t;
 # define GETPC() ((void *)((unsigned long)__builtin_return_address(0) - 1))
 #endif
 
+#if defined(CONFIG_S2E)
+
+//extern void* g_s2e_exec_ret_addr;
+/*
+#ifdef S2E_LLVM_LIB
+#define GETPC() (g_s2e_exec_ret_addr)
+#else
+#define GETPC() (g_s2e_exec_ret_addr ? g_s2e_exec_ret_addr : _GETPC())
+#endif
+ */
+#define GETPC() (NULL)
+
+#elif defined(CONFIG_LLVM)
+
+#if defined(__linux__) || defined(__MINGW32__)
+extern uint64_t tcg_llvm_helper_ret_addr asm("tcg_llvm_runtime"); // XXX
+#else
+extern uint64_t tcg_llvm_helper_ret_addr asm("_tcg_llvm_runtime"); // XXX
+#endif
+#define GETPC() (execute_llvm ? (void*) tcg_llvm_helper_ret_addr : _GETPC())
+
+#else
+
+#define GETPC() _GETPC()
+
+#endif
+
 #endif /* !defined(__DYNGEN_EXEC_H__) */
