@@ -37,7 +37,6 @@
 extern "C" {
 #include "config.h"
 #include "qemu-common.h"
-#include "cpu-common.h"
 #include "exec-all.h"
 #include "sysemu.h"
 
@@ -173,7 +172,8 @@ void S2EExecutionState::enableForking()
 
     forkDisabled = false;
 
-    if (PrintForkingStatus) {
+    //if (PrintForkingStatus) {
+   if(1){
         g_s2e->getMessagesStream(this) << "Enabled forking"
                 << " at pc = " << (void*) getPc()
                 << " and pid = " << hexval(getPid()) << std::endl;
@@ -750,8 +750,6 @@ uint64_t S2EExecutionState::getPhysicalAddress(uint64_t virtualAddress) const
     return physicalAddress | (virtualAddress & ~TARGET_PAGE_MASK);
 }
 
-
-
 uint64_t S2EExecutionState::getHostAddress(uint64_t address,
                                            AddressType addressType) const
 {
@@ -767,7 +765,6 @@ uint64_t S2EExecutionState::getHostAddress(uint64_t address,
            can be modified after memory registration and qemu_get_ram_ptr will
            return incorrect values in such cases */
         hostAddress = (uint64_t) qemu_get_phys_ram_ptr(hostAddress);
-
         if(!hostAddress)
             return (uint64_t) -1;
 
@@ -927,10 +924,11 @@ bool S2EExecutionState::writeMemory8(uint64_t address,
         return false;
 
     ObjectPair op = addressSpace.findObject(hostAddress & S2E_RAM_OBJECT_MASK);
-
+    printf("In %s, address=0x%llx, hostAddress=0x%llx\n", __FUNCTION__, address, hostAddress);
     assert(op.first && op.first->isUserSpecified
            && op.first->size == S2E_RAM_OBJECT_SIZE);
 
+    printf("In %s, op=0x%x, op.first=0x%x\n", __FUNCTION__, &op, op.first);
     ObjectState *wos = addressSpace.getWriteable(op.first, op.second);
     wos->write(hostAddress & ~S2E_RAM_OBJECT_MASK, value);
     return true;
@@ -1008,10 +1006,15 @@ void S2EExecutionState::readRamConcreteCheck(uint64_t hostAddress, uint8_t* buf,
         ObjectPair op = m_memcache.get(page_addr);
         if (!op.first) {
             op = addressSpace.findObject(page_addr);
+        	printf("in %d op=0x%x\n",__LINE__,  &op);
             m_memcache.put(page_addr, op);
         }
 
-
+        printf("op=0x%x, hostAddress=0x=%llx\n", &op, hostAddress);
+        printf("op.first=0x%x\n", op.first);
+        printf("op.first->isUserSpecified=0x%x\n", op.first->isUserSpecified);
+        printf("op.first->address=0x%x, page_addr=0x%llx\n", op.first->isUserSpecified, page_addr);
+	printf("op.first->size=0x%x, S2E_RAM_OBJECT_SIZE=0x%x\n", op.first->size, S2E_RAM_OBJECT_SIZE);
         assert(op.first && op.first->isUserSpecified &&
                op.first->address == page_addr &&
                op.first->size == S2E_RAM_OBJECT_SIZE);
@@ -1815,12 +1818,11 @@ void S2EExecutionState::dmaWrite(uint64_t hostAddress, uint8_t *buf, unsigned si
         size -= length;
     }
 }
-
 uint64_t S2EExecutionState::getAddress(uint64_t hostAddress)
 {
 	uint64_t hostPage = hostAddress & S2E_RAM_OBJECT_MASK;
 	ObjectPair op = m_memcache.get(hostPage);
-        if (!op.first) {
+       if (!op.first) {
             op = addressSpace.findObject(hostPage);
             m_memcache.put(hostAddress, op);
         }
@@ -1832,7 +1834,6 @@ uint64_t S2EExecutionState::getAddress(uint64_t hostAddress)
         unsigned offset = hostAddress & (S2E_RAM_OBJECT_SIZE-1);
 	return ((uint64_t)concreteStore + offset);
 }
-
 #ifdef TARGET_ARM
 void S2EExecutionState::updateTlbEntry(CPUARMState* env,
                           int mmu_idx, uint64_t virtAddr, uint64_t hostAddr)

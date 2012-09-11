@@ -361,7 +361,6 @@ void s2e_write_dirty_mask(uint64_t host_address, uint8_t val);
 
 void s2e_dma_read(uint64_t hostAddress, uint8_t *buf, unsigned size);
 void s2e_dma_write(uint64_t hostAddress, uint8_t *buf, unsigned size);
-uint64_t s2e_get_address(uint64_t hostAddress);
 
 void s2e_on_privilege_change(unsigned previous, unsigned current);
 void s2e_on_page_directory_change(uint64_t previous, uint64_t current);

@@ -127,11 +127,9 @@ uint64_t S2EStatsTracker::getProcessMemoryUsage()
 
     char buffer[512];
     while(!peakMem && fgets(buffer, sizeof(buffer), fp)) {
-	/*
-        if (sscanf(buffer, "VmSize: %" PRIu64, &peakMem)) {
+        //if (sscanf(buffer, "VmSize: %" PRIu64, &peakMem)) {
             break;
-        }
-	*/
+        //}
     }
 
     fclose(fp);

@@ -74,7 +74,7 @@ static void s2e_timer_cb(void *opaque)
 
     g_s2e->getExecutor()->updateStats(g_s2e_state);
     c->onTimer.emit();
-    qemu_mod_timer(c->getTimer(), qemu_get_clock_ms(rt_clock) + 1000);
+    qemu_mod_timer(c->getTimer(), qemu_get_clock(rt_clock) + 1000);
 }
 
 void CorePlugin::initializeTimers()
