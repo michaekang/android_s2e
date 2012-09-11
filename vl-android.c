@@ -2596,10 +2596,11 @@ int main(int argc, char **argv, char **envp)
     QEMUMachine *machine;
     const char *cpu_model;
 #ifdef CONFIG_S2E
-    const char *s2e_config_file = NULL;
-    const char *s2e_output_dir = NULL;
+    //const char *s2e_config_file = NULL;
+    const char *s2e_config_file = "./config.lua";
+    const char *s2e_output_dir = "./";
     int execute_always_klee = 0;
-    int s2e_verbose = 0;
+    int s2e_verbose = 1;
     int s2e_max_processes = 1;
 #endif
 
