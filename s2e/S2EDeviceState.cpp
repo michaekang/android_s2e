@@ -217,8 +217,8 @@ void S2EDeviceState::saveDeviceState()
 void S2EDeviceState::restoreDeviceState()
 {
     assert(s_CurrentState == NULL);
-    assert(m_StateSize);
-    assert(m_State);
+//    assert(m_StateSize);
+//    assert(m_State);
 
     s_CurrentState = this;
 
