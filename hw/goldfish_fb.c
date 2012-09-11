@@ -350,7 +350,7 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
                 xx++;
             });
 #else
-	    printf("case 2:src %p,xx1 0x%x,size 0x%x\n",src,xx1,(xx2 -xx1 + 1)*2);
+	    //printf("case 2:src %p,xx1 0x%x,size 0x%x\n",src,xx1,(xx2 -xx1 + 1)*2);
 #ifndef CONFIG_S2E
             memcpy( dst+xx1, src+xx1, (xx2-xx1+1)*2 );
 #else 
@@ -417,7 +417,7 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
                 }
                 xx2--;
             });
-	    printf("case 3:src %p,xx1 0x%x,size 0x%x\n",src_line,xx1,(xx2 -xx1 + 1)*3);
+	    //printf("case 3:src %p,xx1 0x%x,size 0x%x\n",src_line,xx1,(xx2 -xx1 + 1)*3);
             memcpy( dst_line+xx1*3, src_line+xx1*3, (xx2-xx1+1)*3 );
             break;
         }
