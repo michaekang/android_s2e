@@ -77,6 +77,7 @@
 #define ADDR_READ addr_read
 #endif
 
+#define ADDR_MAX 0xffffffff
 #ifdef CONFIG_S2E
 #include <s2e/s2e_config.h>
 
