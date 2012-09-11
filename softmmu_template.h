@@ -58,12 +58,12 @@
                                  value, 8*sizeof(value), isWrite, isIO);
 #define S2E_FORK_AND_CONCRETIZE(val, max) \
     tcg_llvm_fork_and_concretize(val, 0, max)
-#else // S2E_LLVM_LIB
+#else // !S2E_LLVM_LIB
 #define S2E_TRACE_MEMORY(vaddr, haddr, value, isWrite, isIO) \
     s2e_trace_memory_access(vaddr, haddr, \
                             (uint8_t*) &value, sizeof(value), isWrite, isIO);
 #define S2E_FORK_AND_CONCRETIZE(val, max) (val)
-#endif // S2E_LLVM_LIB
+#endif // end S2E_LLVM_LIB
 
 
 #define S2E_FORK_AND_CONCRETIZE_ADDR(val, max) \
@@ -71,7 +71,7 @@
 
 #define S2E_RAM_OBJECT_DIFF (TARGET_PAGE_BITS - S2E_RAM_OBJECT_BITS)
 
-#else // CONFIG_S2E
+#else // !CONFIG_S2E
 
 #define S2E_TRACE_MEMORY(...)
 #define S2E_FORK_AND_CONCRETIZE(val, max) (val)
@@ -320,7 +320,7 @@ DATA_TYPE REGPARM glue(glue(__ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
     DATA_TYPE res;
     int object_index, index;
     target_ulong tlb_addr;
-    target_phys_addr_t addend;
+    uintptr_t addend;
     void *retaddr;
 
 	extern unsigned long block_icount;
@@ -369,7 +369,7 @@ DATA_TYPE REGPARM glue(glue(__ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
                 res = glue(glue(ld, USUFFIX), _p)((uint8_t*)(addr + (e->addend&~1)));
             else
 #endif
-                res = glue(glue(ld, USUFFIX), _raw)((uint8_t *)(intptr_t)(addr+addend));
+                res = glue(glue(ld, USUFFIX), _raw)((uint8_t *)(uintptr_t)(addr+addend));
 
             S2E_TRACE_MEMORY(addr, addr+addend, res, 0, 0);
         }
@@ -395,7 +395,7 @@ static DATA_TYPE glue(glue(slow_ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
 {
     DATA_TYPE res, res1, res2;
     int object_index, index, shift;
-    target_phys_addr_t addend;
+    uintptr_t addend;
     target_ulong tlb_addr, addr1, addr2;
 
     addr = S2E_FORK_AND_CONCRETIZE_ADDR(addr, ADDR_MAX);
@@ -440,7 +440,7 @@ static DATA_TYPE glue(glue(slow_ld, SUFFIX), MMUSUFFIX)(target_ulong addr,
                 res = glue(glue(ld, USUFFIX), _p)((uint8_t*)(addr + (e->addend&~1)));
             else
 #endif
-                res = glue(glue(ld, USUFFIX), _raw)((uint8_t *)(intptr_t)(addr+addend));
+                res = glue(glue(ld, USUFFIX), _raw)((uint8_t *)(uintptr_t)(addr+addend));
 
             S2E_TRACE_MEMORY(addr, addr+addend, res, 0, 0);
         }
@@ -746,7 +746,7 @@ void REGPARM glue(glue(__st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                  int mmu_idx)
 {
     target_phys_addr_t ioaddr;
-    unsigned long addend;
+    uintptr_t addend;
     target_ulong tlb_addr;
     void *retaddr;
     int index;
@@ -803,7 +803,7 @@ void REGPARM glue(glue(__st, SUFFIX), MMUSUFFIX)(target_ulong addr,
             }
 #endif
             addend = env->tlb_table[mmu_idx][index].addend;
-            glue(glue(st, SUFFIX), _raw)((uint8_t *)(long)(addr+addend), val);
+            glue(glue(st, SUFFIX), _raw)((uint8_t *)(uintptr_t)(addr+addend), val);
         }
 #ifdef CONFIG_MEMCHECK_MMU
         if (invalidate_cache) {
@@ -838,7 +838,7 @@ static void glue(glue(slow_st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                    void *retaddr)
 {
     target_phys_addr_t ioaddr;
-    unsigned long addend;
+    uintptr_t addend;
     target_ulong tlb_addr;
     int index, i;
 
@@ -869,7 +869,7 @@ static void glue(glue(slow_st, SUFFIX), MMUSUFFIX)(target_ulong addr,
         } else {
             /* aligned/unaligned access in the same page */
             addend = env->tlb_table[mmu_idx][index].addend;
-            glue(glue(st, SUFFIX), _raw)((uint8_t *)(long)(addr+addend), val);
+            glue(glue(st, SUFFIX), _raw)((uint8_t *)(uintptr_t)(addr+addend), val);
         }
     } else {
         /* the page is not in the TLB : fill it */
@@ -883,7 +883,7 @@ void REGPARM glue(glue(__st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                  DATA_TYPE val,
                                                  int mmu_idx)
 {
-    target_phys_addr_t addend;
+    uintptr_t addend;
     target_ulong tlb_addr;
     void *retaddr;
     int object_index, index;
@@ -928,7 +928,7 @@ void REGPARM glue(glue(__st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                 glue(glue(st, SUFFIX), _p)((uint8_t*)(addr + (e->addend&~1)), val);
             else
 #endif
-                glue(glue(st, SUFFIX), _raw)((uint8_t *)(intptr_t)(addr+addend), val);
+                glue(glue(st, SUFFIX), _raw)((uint8_t *)(uintptr_t)(addr+addend), val);
 
             S2E_TRACE_MEMORY(addr, addr+addend, val, 1, 0);
         }
@@ -953,7 +953,7 @@ static void glue(glue(slow_st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                                                    int mmu_idx,
                                                    void *retaddr)
 {
-    target_phys_addr_t addend;
+    uintptr_t addend;
     target_ulong tlb_addr;
     int object_index, index, i;
 
@@ -996,7 +996,7 @@ static void glue(glue(slow_st, SUFFIX), MMUSUFFIX)(target_ulong addr,
                 glue(glue(st, SUFFIX), _p)((uint8_t*)(addr + (e->addend&~1)), val);
             else
 #endif
-                glue(glue(st, SUFFIX), _raw)((uint8_t *)(intptr_t)(addr+addend), val);
+                glue(glue(st, SUFFIX), _raw)((uint8_t *)(uintptr_t)(addr+addend), val);
 
             S2E_TRACE_MEMORY(addr, addr+addend, val, 1, 0);
         }
