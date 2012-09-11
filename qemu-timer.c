@@ -1391,7 +1391,7 @@ int64_t cpu_get_icount(void)
     icount = qemu_icount;
     if (env) {
         if (!can_do_io(env)) {
-            fprintf(stderr, "Bad clock read\n");
+            //fprintf(stderr, "Bad clock read\n");
         }
         icount -= (env->icount_decr.u16.low + env->icount_extra);
     }
