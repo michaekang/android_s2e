@@ -130,7 +130,7 @@ static const char *regnames[] =
 static inline void gen_instr_end(DisasContext *s)
 {
     if (!s->done_instr_end) {
-        //s2e_on_translate_instruction_end(g_s2e, g_s2e_state, s->tb, s->insPc, s->useNextPc ? s->nextPc : (uint64_t)-1);
+        s2e_on_translate_instruction_end(g_s2e, g_s2e_state, s->tb, s->insPc, s->useNextPc ? s->nextPc : (uint64_t)-1);
         s->done_instr_end = 1;
     }
 }
@@ -6513,6 +6513,7 @@ static void disas_arm_insn(CPUState * env, DisasContext *s)
     		#ifdef CONFIG_S2E
         				//ldq_code loads a 64 bit content from memory
         				//whereas ldl_code loads a 32 bit content from memory
+					printf("insn=0x%x, s2e_tcg_emit_custom_instruction\n", insn);
     					s2e_tcg_emit_custom_instruction(g_s2e, ((uint64_t) insn));
     		#else
     					/* Simply skip the S2E opcodes when building vanilla qemu */

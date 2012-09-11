@@ -848,6 +848,7 @@ void do_interrupt(CPUARMState *env)
         new_mode = ARM_CPU_MODE_UND;
         addr = 0x04;
         mask = CPSR_I;
+	printf("In %s, EXCP_UDEF:pc=0x%x\n", __FUNCTION__, env->regs[15]);
         if (env->thumb)
             offset = 2;
         else

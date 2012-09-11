@@ -23,6 +23,13 @@
 #ifdef CONFIG_TRACE
 #include "trace.h"
 #endif
+/** Global variable that determines whether to make
+    symbolic I/O memory addresses concrete */
+extern int g_s2e_concretize_io_addresses;
+
+/** Global variable that determines whether to make
+    symbolic I/O writes concrete */
+extern int g_s2e_concretize_io_writes;
 
 #include <string.h>
 
