@@ -1205,6 +1205,7 @@ int TCGLLVMContextPrivate::generateOperation(int opc, const TCGArg *args)
     __OP_QEMU_LD(INDEX_op_qemu_ld16u, 16, Z)
     __OP_QEMU_LD(INDEX_op_qemu_ld32s, 32, S)
     __OP_QEMU_LD(INDEX_op_qemu_ld32u, 32, Z)
+    __OP_QEMU_LD(INDEX_op_qemu_ld32, 32, Z)
     __OP_QEMU_LD(INDEX_op_qemu_ld64,  64, Z)
 
 #undef __OP_QEMU_LD
