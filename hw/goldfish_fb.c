@@ -323,23 +323,37 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
 #else
 	    const uint16_t* src; 
 	    src = s2e_get_address((uint64_t)src_line);
+            uint32_t i = 0;
 #endif 
             uint16_t*       dst = (uint16_t*) dst_line;
 
             xx1 = 0;
-            DUFF4(width, {
-                if (src[xx1] != dst[xx1])
+            DUFF4(width, {	
+		if((((uint64_t)src_line + (2 * i)) & (S2E_RAM_OBJECT_SIZE - 1)) == 0){
+	        	src = s2e_get_address(((uint64_t)src_line + (2 * i)));
+			//printf("src_line %p,src %p\n",src_line + );
+			i = 0;
+		}
+                if (src[i] != dst[xx1])
                     break;
                 xx1++;
+                i++;
             });
             if (xx1 == width) {
                 break;
             }
             xx2 = width-1;
+	    i = (xx2 & (S2E_RAM_OBJECT_SIZE - 1));
+	    src = s2e_get_address(((uint64_t)src_line + (2 * xx2)) & ~(S2E_RAM_OBJECT_SIZE - 1));
             DUFF4(xx2-xx1, {
-                if (src[xx2] != dst[xx2])
+		if((((uint64_t)src_line + (2 * xx2)) & (S2E_RAM_OBJECT_SIZE - 1)) == 0){
+	        	src = s2e_get_address(((uint64_t)src_line + (2 * xx2) - 2 ) & ~(S2E_RAM_OBJECT_SIZE - 1));
+			i = (S2E_RAM_OBJECT_SIZE - 1)/2;
+		}
+                if (src[i] != dst[xx2])
                     break;
                 xx2--;
+		i--;
             });
 #if HOST_WORDS_BIGENDIAN
             /* Convert the guest little-endian pixels into big-endian ones */
