@@ -1,0 +1,32 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+LOCAL_ARM_MODE	Android.mk	/^LOCAL_ARM_MODE := arm$/;"	m
+LOCAL_MODULE	Android.mk	/^LOCAL_MODULE := s2e_t2$/;"	m
+LOCAL_MODULE_TAGS	Android.mk	/^LOCAL_MODULE_TAGS := optional$/;"	m
+LOCAL_PATH	Android.mk	/^LOCAL_PATH:= $(call my-dir)$/;"	m
+LOCAL_SRC_FILES	Android.mk	/^LOCAL_SRC_FILES:= t2.c$/;"	m
+LOCAL_STATIC_LIBRARIES	Android.mk	/^LOCAL_STATIC_LIBRARIES := libcutils libc$/;"	m
+__s2e_touch_buffer	s2earm.h	/^static inline void __s2e_touch_buffer(volatile void *buffer, unsigned size)$/;"	f
+__s2e_touch_string	s2earm.h	/^static inline void __s2e_touch_string(volatile const char *string)$/;"	f
+_s2e_assert	s2earm.h	/^static inline void _s2e_assert(int b, const char *expression )$/;"	f
+main	t2.c	/^int main(void)$/;"	f
+s2e_assert	s2earm.h	269;"	d
+s2e_concretize	s2earm.h	/^static inline void s2e_concretize(void* buf, int size)$/;"	f
+s2e_disable_forking	s2earm.h	/^static inline void s2e_disable_forking(void)$/;"	f
+s2e_enable_forking	s2earm.h	/^static inline void s2e_enable_forking(void)$/;"	f
+s2e_get_example	s2earm.h	/^static inline void s2e_get_example(void* buf, int size)$/;"	f
+s2e_get_example_uint	s2earm.h	/^static inline unsigned s2e_get_example_uint(unsigned val)$/;"	f
+s2e_get_path_id	s2earm.h	/^static inline unsigned s2e_get_path_id(void)$/;"	f
+s2e_get_ram_object_bits	s2earm.h	/^static inline int s2e_get_ram_object_bits()$/;"	f
+s2e_kill_state	s2earm.h	/^static inline void s2e_kill_state(int status, const char* message)$/;"	f
+s2e_make_symbolic	s2earm.h	/^static inline void s2e_make_symbolic(void* buf, int size, const char* name)$/;"	f
+s2e_merge_point	s2earm.h	/^static inline void s2e_merge_point()$/;"	f
+s2e_message	s2earm.h	/^static inline void s2e_message(const char* message)$/;"	f
+s2e_print_expression	s2earm.h	/^static inline void s2e_print_expression(const char* name, int expression)$/;"	f
+s2e_rawmon_loadmodule	s2earm.h	/^static inline void s2e_rawmon_loadmodule(const char *name, unsigned loadbase, unsigned size)$/;"	f
+s2e_version	s2earm.h	/^static inline int s2e_version()$/;"	f
+s2e_warning	s2earm.h	/^static inline void s2e_warning(const char* message)$/;"	f
