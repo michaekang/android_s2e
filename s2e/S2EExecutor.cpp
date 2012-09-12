@@ -64,7 +64,7 @@ uint64_t helper_do_interrupt(int intno, int is_int, int error_code,
 #endif
 uint64_t helper_set_cc_op_eflags(void);
 
-uint64_t s2e_get_address(uint64_t hostAddress);
+//uint64_t s2e_get_address(uint64_t hostAddress);
 }
 #include <malloc.h>
 
