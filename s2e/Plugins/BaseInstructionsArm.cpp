@@ -80,7 +80,7 @@ void BaseInstructions::handleBuiltInOps(S2EExecutionState* state, uint64_t opcod
                             << "handleBuiltInOps with opcode "
                             << hexval(opcode)
                             << " called.\n";
-    cout<<"opcode:"<<opcode<<endl;
+    //cout<<"opcode:"<<opcode<<endl;
     switch((opcode>>16) & 0xFF) {
         case 0: { /* s2e_check */
                 uint32_t v = 2;

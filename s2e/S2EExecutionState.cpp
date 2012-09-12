@@ -924,11 +924,11 @@ bool S2EExecutionState::writeMemory8(uint64_t address,
         return false;
 
     ObjectPair op = addressSpace.findObject(hostAddress & S2E_RAM_OBJECT_MASK);
-    printf("In %s, address=0x%llx, hostAddress=0x%llx\n", __FUNCTION__, address, hostAddress);
+    //printf("In %s, address=0x%llx, hostAddress=0x%llx\n", __FUNCTION__, address, hostAddress);
     assert(op.first && op.first->isUserSpecified
            && op.first->size == S2E_RAM_OBJECT_SIZE);
 
-    printf("In %s, op=0x%x, op.first=0x%x\n", __FUNCTION__, &op, op.first);
+    //printf("In %s, op=0x%x, op.first=0x%x\n", __FUNCTION__, &op, op.first);
     ObjectState *wos = addressSpace.getWriteable(op.first, op.second);
     wos->write(hostAddress & ~S2E_RAM_OBJECT_MASK, value);
     return true;
@@ -1006,15 +1006,16 @@ void S2EExecutionState::readRamConcreteCheck(uint64_t hostAddress, uint8_t* buf,
         ObjectPair op = m_memcache.get(page_addr);
         if (!op.first) {
             op = addressSpace.findObject(page_addr);
-        	printf("in %d op=0x%x\n",__LINE__,  &op);
+    //    	printf("in %d op=0x%x\n",__LINE__,  &op);
             m_memcache.put(page_addr, op);
         }
-
+/*
         printf("op=0x%x, hostAddress=0x=%llx\n", &op, hostAddress);
         printf("op.first=0x%x\n", op.first);
         printf("op.first->isUserSpecified=0x%x\n", op.first->isUserSpecified);
         printf("op.first->address=0x%x, page_addr=0x%llx\n", op.first->isUserSpecified, page_addr);
 	printf("op.first->size=0x%x, S2E_RAM_OBJECT_SIZE=0x%x\n", op.first->size, S2E_RAM_OBJECT_SIZE);
+*/
         assert(op.first && op.first->isUserSpecified &&
                op.first->address == page_addr &&
                op.first->size == S2E_RAM_OBJECT_SIZE);
