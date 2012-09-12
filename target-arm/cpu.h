@@ -93,11 +93,11 @@ struct arm_boot_info;
 
 typedef struct CPUARMState {
     /* Regs for current mode.  */
-    uint32_t regs[16];
+    //uint32_t regs[16];
     /* Frequently accessed CPSR bits are stored separately for efficiently.
        This contains all the other bits.  Use cpsr_{read,write} to access
        the whole CPSR.  */
-    uint32_t uncached_cpsr;
+    //uint32_t uncached_cpsr;
     uint32_t spsr;
 
     /* Banked registers.  */
@@ -114,11 +114,15 @@ typedef struct CPUARMState {
     uint32_t VF; /* V is the bit 31. All other bits are undefined */
     uint32_t NF; /* N is bit 31. All other bits are undefined.  */
     uint32_t ZF; /* Z set if zero.  */
+    /* Regs for current mode.  */
+    uint32_t regs[16];
+
     uint32_t QF; /* 0 or 1 */
     uint32_t GE; /* cpsr[19:16] */
     uint32_t thumb; /* cpsr[5]. 0 = arm mode, 1 = thumb mode. */
     uint32_t condexec_bits; /* IT bits.  cpsr[15:10,26:25].  */
 
+    uint32_t uncached_cpsr;
     /* System control coprocessor (cp15) */
     struct {
         uint32_t c0_cpuid;
