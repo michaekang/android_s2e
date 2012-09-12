@@ -1,0 +1,35 @@
+From 612baabd228c9589e3ea8c653b9c7f2352fd7114 Mon Sep 17 00:00:00 2001
+From: Michael.Kang <blackfin.kang@gmail.com>
+Date: Wed, 12 Sep 2012 12:31:49 +0800
+Subject: [PATCH 5/5] Workaround the segfault of fb update
+
+Workaround the segfault of fb update
+
+Signed-off-by: Michael.Kang <blackfin.kang@gmail.com>
+---
+ hw/goldfish_fb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/hw/goldfish_fb.c b/hw/goldfish_fb.c
+index 004b1b2..40171b1 100644
+--- a/hw/goldfish_fb.c
++++ b/hw/goldfish_fb.c
+@@ -286,6 +286,7 @@ compute_fb_update_rect_linear(FbUpdateState*  fbs,
+     uint32_t       dirty_addr = dirty_base;
+     rect->xmin = rect->ymin = INT_MAX;
+     rect->xmax = rect->ymax = INT_MIN;
++	return 0;
+     for (yy = 0; yy < fbs->height; yy++) {
+         int xx1, xx2;
+         /* If dirty_addr is != 0, then use it as a physical address to
+@@ -570,6 +571,7 @@ static void goldfish_fb_update_display(void *opaque)
+         if (full_update) { /* don't use dirty-bits optimization */
+             base = 0;
+         }
++	
+         if (compute_fb_update_rect_linear(&fbs, base, &rect) == 0) {
+             return;
+         }
+-- 
+1.7.0.4
+
