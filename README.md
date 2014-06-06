@@ -14,6 +14,7 @@ Now One simple native android program can be analysis by android_s2e project. Yo
 
 How to setup?
 =====================
+https://github.com/michaekang/android_s2e/wiki/Android-on-S2E
 
 About Me.
 =====================
