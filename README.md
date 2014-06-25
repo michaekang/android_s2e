@@ -1,4 +1,5 @@
        The project of Android on S2E
+       =======================================
        
 About S2E
 =====================
@@ -20,6 +21,9 @@ How to setup?
 =====================
 https://github.com/michaekang/android_s2e/wiki/Android-on-S2E
 
-About Me.
+About author.
 =====================
+The project is sponsored by the OS team in Computer Science of Tsinghua University , which is lead by Chenyu(yuchen@mail.tsinghua.edu.cn)
+
+The project maintainer is Michael.Kang:
 http://cn.linkedin.com/in/kangshuo/
