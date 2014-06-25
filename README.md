@@ -10,7 +10,11 @@ Android is a popular mobile phone OS. Its home page is located at http://www.and
 
 The current status
 ===============================
-Now One simple native android program can be analysis by android_s2e project. You can see it lively by the following video
+Now One simple native android program can be analysis by android_s2e project. You can see it lively by the following video:
+http://youtu.be/3cTaeo8_izs
+Or on the Chinese video site:
+http://v.youku.com/v_show/id_XNzMxNTE5MzE2.html
+
 
 How to setup?
 =====================
