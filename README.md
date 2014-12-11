@@ -23,7 +23,6 @@ https://github.com/michaekang/android_s2e/wiki/Android-on-S2E
 
 About author.
 =====================
-The project is sponsored by the OS team in Computer Science of Tsinghua University , which is lead by Prof Chen(yuchen@mail.tsinghua.edu.cn)
 
-The project maintainer is Michael.Kang:
+The project maintainer is Michael.Kang (ksh@skyeye.org):
 http://cn.linkedin.com/in/kangshuo/
